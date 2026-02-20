@@ -9,6 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface KebunRepository extends JpaRepository<Kebun, UUID> {
-    List<Kebun> findByNamaKebun(String nama);
-    List<Kebun> findByLuasHektare(Integer luas);
+
 }
