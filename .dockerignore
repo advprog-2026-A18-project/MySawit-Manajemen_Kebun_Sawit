@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+build/
+dist/
+target/
+*.jar
+*.war
+*.zip
+
+# Gradle
+.gradle
+gradle-app.setting
+gradlew
+gradlew.bat
+
+# Environment
+.env
+.env.example
+.env.local
+
+# Logs
+logs/
+*.log
+
+# Node (if using)
+node_modules/
+npm-debug.log
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation
+README.md
+HELP.md
+NEON_SETUP.md
+*.md
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
