@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -16,8 +17,8 @@ import java.util.UUID;
 public class Kebun {
 
     @Id
-    @Column(name = "id", columnDefinition = "uuid")
-    private UUID id;
+    @Column(name = "kode_kebun")
+    private String kodeKebun;
 
     @Column(name = "nama_kebun", nullable = false)
     private String namaKebun;
@@ -31,11 +32,16 @@ public class Kebun {
     @Column(name = "created_at", columnDefinition = "timestamp with time zone", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "mandor_id")
+    private String mandorId;
+
+    @ElementCollection
+    @CollectionTable(name = "kebun_supir", joinColumns = @JoinColumn(name = "kode_kebun"))
+    @Column(name = "supir_id")
+    private List<String> supirIds = new ArrayList<>();
+
     @PrePersist
     public void prePersist() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
         if (createdAt == null) {
             createdAt = OffsetDateTime.now();
         }
