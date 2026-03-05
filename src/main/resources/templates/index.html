@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MySawit - Dummy Frontend</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;padding:1rem}button{margin-top:.5rem}</style>
+</head>
+<body>
+  <h1>MySawit — Dummy Frontend (Manajemen Kebun Sawit)</h1>
+  <p>Backend API: <code>/api/kebun</code></p>
+  <div>
+    <button id="list">List Kebun</button>
+    <pre id="out"></pre>
+  </div>
+
+  <script>
+    const out = document.getElementById('out');
+    document.getElementById('list').addEventListener('click', async () => {
+      out.textContent = 'Loading...';
+      try {
+        const res = await fetch('/api/kebun');
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        out.textContent = 'Error: ' + e;
+      }
+    });
+  </script>
+</body>
+</html>
