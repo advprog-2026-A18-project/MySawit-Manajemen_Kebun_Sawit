@@ -8,6 +8,8 @@ jobs:
 
   Continuous-Integration:
     runs-on: ubuntu-22.04
+    env:
+      GRADLE_OPTS: -Dorg.gradle.dependency.verification=off
     steps:
 
       - name: Check out the Git repository
