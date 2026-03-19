@@ -20,8 +20,12 @@ RUN ./gradlew clean bootJar -x test --no-daemon
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
+ARG DATABASE_URL
+
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8082
+
+ENV DATABASE_URL=${DATABASE_URL}
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
