@@ -71,4 +71,32 @@ class KebunControllerTest {
         assertEquals(200, result.getStatusCode());
         verify(kebunService, times(1)).getAllKebun("Makmur", null);
     }
+
+    @Test
+    void testGetAllKebun_WithSearchKode() {
+        List<KebunResponse> expectedList = List.of(
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null)
+        );
+        when(kebunService.getAllKebun(null, "KB")).thenReturn(expectedList);
+
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, "KB");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        verify(kebunService, times(1)).getAllKebun(null, "KB");
+    }
+
+    @Test
+    void testGetAllKebun_WithBothFilters() {
+        List<KebunResponse> expectedList = List.of(
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null)
+        );
+        when(kebunService.getAllKebun("Makmur", "KB")).thenReturn(expectedList);
+
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun("Makmur", "KB");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        assertEquals("Kebun Makmur", result.getData().get(0).getNamaKebun());
+    }
 }
