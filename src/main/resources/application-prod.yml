@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: ${M_KEBUN_SAWIT_DB_URL}
+    username: ${M_KEBUN_SAWIT_DB_USER}
+    password: ${M_KEBUN_SAWIT_DB_PASSWORD}
+
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
