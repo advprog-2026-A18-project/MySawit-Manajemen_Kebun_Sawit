@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.controller;
-import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.Kebun;
-import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunRepository;
+
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.KebunService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,7 +18,7 @@ import static org.mockito.Mockito.*;
 class KebunControllerTest {
 
     @Mock
-    private KebunRepository kebunRepository;
+    private KebunService kebunService;
 
     @InjectMocks
     private KebunController kebunController;
@@ -27,41 +29,74 @@ class KebunControllerTest {
     }
 
     @Test
-    void getAllKebun_shouldReturnListOfKebun() {
-        Kebun kebun1 = new Kebun();
-        kebun1.setKodeKebun("KB001");
-        kebun1.setNamaKebun("Kebun Makmur");
-        kebun1.setLuasHektare(500);
-        kebun1.setKoordinat("{\"points\": [[0, 0], [200, 0], [200, 200], [0, 200]]}");
+    void testGetAllKebun_ReturnsList() {
+        KebunResponse kebun1 = new KebunResponse("KB001", "Kebun Makmur", 500, "{\"points\": [[0, 0], [200, 0], [200, 200], [0, 200]]}", null, null);
+        KebunResponse kebun2 = new KebunResponse("KB002", "Kebun Sejahtera", 750, "{\"points\": [[0, 0], [300, 0], [300, 250], [0, 250]]}", null, null);
 
-        Kebun kebun2 = new Kebun();
-        kebun2.setKodeKebun("KB002");
-        kebun2.setNamaKebun("Kebun Sejahtera");
-        kebun2.setLuasHektare(750);
-        kebun2.setKoordinat("{\"points\": [[0, 0], [300, 0], [300, 250], [0, 250]]}");
+        List<KebunResponse> expectedList = Arrays.asList(kebun1, kebun2);
+        when(kebunService.getAllKebun(null, null)).thenReturn(expectedList);
 
-        List<Kebun> expectedList = Arrays.asList(kebun1, kebun2);
-        when(kebunRepository.findAll()).thenReturn(expectedList);
-
-        List<Kebun> result = kebunController.getAllKebun();
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, null);
 
         assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("KB001", result.get(0).getKodeKebun());
-        assertEquals("Kebun Makmur", result.get(0).getNamaKebun());
-        assertEquals("KB002", result.get(1).getKodeKebun());
-        assertEquals("Kebun Sejahtera", result.get(1).getNamaKebun());
-        verify(kebunRepository, times(1)).findAll();
+        assertEquals(200, result.getStatusCode());
+        assertEquals(2, result.getData().size());
+        assertEquals("KB001", result.getData().get(0).getKodeKebun());
+        assertEquals("Kebun Makmur", result.getData().get(0).getNamaKebun());
+        verify(kebunService, times(1)).getAllKebun(null, null);
     }
 
     @Test
-    void getAllKebun_shouldReturnEmptyListWhenNoData() {
-        when(kebunRepository.findAll()).thenReturn(List.of());
+    void testGetAllKebun_ReturnsEmptyList() {
+        when(kebunService.getAllKebun(null, null)).thenReturn(List.of());
 
-        List<Kebun> result = kebunController.getAllKebun();
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, null);
 
         assertNotNull(result);
-        assertEquals(0, result.size());
-        verify(kebunRepository, times(1)).findAll();
+        assertEquals(200, result.getStatusCode());
+        assertEquals(0, result.getData().size());
+        verify(kebunService, times(1)).getAllKebun(null, null);
+    }
+
+    @Test
+    void testGetAllKebun_WithSearch() {
+        List<KebunResponse> expectedList = List.of(
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null)
+        );
+        when(kebunService.getAllKebun("Makmur", null)).thenReturn(expectedList);
+
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun("Makmur", null);
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        verify(kebunService, times(1)).getAllKebun("Makmur", null);
+    }
+
+    @Test
+    void testGetAllKebun_WithSearchKode() {
+        List<KebunResponse> expectedList = List.of(
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null)
+        );
+        when(kebunService.getAllKebun(null, "KB")).thenReturn(expectedList);
+
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, "KB");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        verify(kebunService, times(1)).getAllKebun(null, "KB");
+    }
+
+    @Test
+    void testGetAllKebun_WithBothFilters() {
+        List<KebunResponse> expectedList = List.of(
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null)
+        );
+        when(kebunService.getAllKebun("Makmur", "KB")).thenReturn(expectedList);
+
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun("Makmur", "KB");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        assertEquals("Kebun Makmur", result.getData().get(0).getNamaKebun());
     }
 }
