@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -114,5 +115,54 @@ class KebunServiceImplTest {
         assertEquals(1, result.size());
         verify(kebunRepository, times(1)).findByNamaKebunContainingIgnoreCase("Makmur");
         verify(kebunRepository, never()).findByKodeKebunContainingIgnoreCase(anyString());
+    }
+
+    @Test
+    void testGetKebunById_Found() {
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun("KB001");
+        kebun.setNamaKebun("Kebun Makmur");
+        kebun.setLuasHektare(500);
+        kebun.setKoordinat("{}");
+        kebun.setMandorId("M001");
+
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+
+        KebunResponse result = kebunService.getKebunById("KB001");
+
+        assertNotNull(result);
+        assertEquals("KB001", result.getKodeKebun());
+        assertEquals("Kebun Makmur", result.getNamaKebun());
+        assertEquals(500, result.getLuasHektare());
+        assertEquals("M001", result.getMandorId());
+    }
+
+    @Test
+    void testGetKebunById_NotFound() {
+        when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
+
+        KebunResponse result = kebunService.getKebunById("KB999");
+
+        assertNull(result);
+    }
+
+    @Test
+    void testGetAllKebun_WithBlankSearch_UsesDefault() {
+        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
+
+        List<KebunResponse> result = kebunService.getAllKebun("   ", "   ");
+
+        assertNotNull(result);
+        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
+    }
+
+    @Test
+    void testGetAllKebun_WithEmptyString_UsesDefault() {
+        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
+
+        List<KebunResponse> result = kebunService.getAllKebun("", "");
+
+        assertNotNull(result);
+        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
     }
 }
