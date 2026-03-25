@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +33,15 @@ public class KebunServiceImpl implements KebunService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public KebunResponse getKebunById(String kodeKebun) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isEmpty()) {
+            return null;
+        }
+        return toResponse(optionalKebun.get());
+    }
+
     private KebunResponse toResponse(Kebun kebun) {
         return new KebunResponse(
                 kebun.getKodeKebun(),
@@ -39,7 +49,8 @@ public class KebunServiceImpl implements KebunService {
                 kebun.getLuasHektare(),
                 kebun.getKoordinat(),
                 kebun.getMandorId(),
-                kebun.getCreatedAt()
+                kebun.getCreatedAt(),
+                kebun.getSupirIds() != null ? kebun.getSupirIds() : List.of()
         );
     }
 }

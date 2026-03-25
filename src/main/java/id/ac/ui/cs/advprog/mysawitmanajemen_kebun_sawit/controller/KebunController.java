@@ -23,4 +23,13 @@ public class KebunController {
         List<KebunResponse> kebunList = kebunService.getAllKebun(searchNama, searchKode);
         return GenericResponse.success("Successfully retrieved kebun list", kebunList);
     }
+
+    @GetMapping("/{kode}")
+    public GenericResponse<KebunResponse> getKebunById(@PathVariable String kode) {
+        KebunResponse kebun = kebunService.getKebunById(kode);
+        if (kebun == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully retrieved kebun", kebun);
+    }
 }
