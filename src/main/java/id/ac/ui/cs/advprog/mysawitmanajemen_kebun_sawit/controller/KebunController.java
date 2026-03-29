@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.controller;
 
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.KebunService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,11 @@ public class KebunController {
             return GenericResponse.error(404, "Kebun not found");
         }
         return GenericResponse.success("Successfully retrieved kebun", kebun);
+    }
+
+    @PostMapping
+    public GenericResponse<KebunResponse> createKebun(@RequestBody KebunRequest request) {
+        KebunResponse created = kebunService.createKebun(request);
+        return GenericResponse.success("Successfully created kebun", created);
     }
 }

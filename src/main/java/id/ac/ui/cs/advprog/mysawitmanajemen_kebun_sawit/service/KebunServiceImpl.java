@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service;
 
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.Kebun;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunRepository;
@@ -40,6 +41,18 @@ public class KebunServiceImpl implements KebunService {
             return null;
         }
         return toResponse(optionalKebun.get());
+    }
+
+    @Override
+    public KebunResponse createKebun(KebunRequest request) {
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun(request.getKodeKebun());
+        kebun.setNamaKebun(request.getNamaKebun());
+        kebun.setLuasHektare(request.getLuasHektare());
+        kebun.setKoordinat(request.getKoordinat());
+
+        Kebun saved = kebunRepository.save(kebun);
+        return toResponse(saved);
     }
 
     private KebunResponse toResponse(Kebun kebun) {
