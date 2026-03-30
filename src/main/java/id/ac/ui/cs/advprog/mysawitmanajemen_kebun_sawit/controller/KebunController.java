@@ -39,4 +39,14 @@ public class KebunController {
         KebunResponse created = kebunService.createKebun(request);
         return GenericResponse.success("Successfully created kebun", created);
     }
+
+    @DeleteMapping("/{kode}")
+    public GenericResponse<Void> deleteKebun(@PathVariable String kode) {
+        try {
+            kebunService.deleteKebun(kode);
+            return GenericResponse.success("Successfully deleted kebun", null);
+        } catch (IllegalStateException e) {
+            return GenericResponse.error(400, e.getMessage());
+        }
+    }
 }
