@@ -55,6 +55,18 @@ public class KebunServiceImpl implements KebunService {
         return toResponse(saved);
     }
 
+    @Override
+    public void deleteKebun(String kodeKebun) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isPresent()) {
+            Kebun kebun = optionalKebun.get();
+            if (kebun.getMandorId() != null) {
+                throw new IllegalStateException("Cannot delete kebun with assigned mandor");
+            }
+            kebunRepository.deleteById(kodeKebun);
+        }
+    }
+
     private KebunResponse toResponse(Kebun kebun) {
         return new KebunResponse(
                 kebun.getKodeKebun(),
