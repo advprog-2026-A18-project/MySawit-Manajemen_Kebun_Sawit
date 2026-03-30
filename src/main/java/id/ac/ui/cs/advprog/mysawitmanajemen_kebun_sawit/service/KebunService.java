@@ -9,5 +9,6 @@ public interface KebunService {
     List<KebunResponse> getAllKebun(String searchNama, String searchKode);
     KebunResponse getKebunById(String kodeKebun);
     KebunResponse createKebun(KebunRequest request);
+    KebunResponse updateKebun(String kodeKebun, KebunRequest request);
     void deleteKebun(String kodeKebun);
 }
