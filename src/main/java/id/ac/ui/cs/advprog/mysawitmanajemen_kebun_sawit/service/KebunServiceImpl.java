@@ -56,6 +56,28 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
+    public KebunResponse updateKebun(String kodeKebun, KebunRequest request) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun kebun = optionalKebun.get();
+        if (request.getNamaKebun() != null) {
+            kebun.setNamaKebun(request.getNamaKebun());
+        }
+        if (request.getLuasHektare() != null) {
+            kebun.setLuasHektare(request.getLuasHektare());
+        }
+        if (request.getKoordinat() != null) {
+            kebun.setKoordinat(request.getKoordinat());
+        }
+
+        Kebun updated = kebunRepository.save(kebun);
+        return toResponse(updated);
+    }
+
+    @Override
     public void deleteKebun(String kodeKebun) {
         Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
         if (optionalKebun.isPresent()) {

@@ -40,6 +40,17 @@ public class KebunController {
         return GenericResponse.success("Successfully created kebun", created);
     }
 
+    @PutMapping("/{kode}")
+    public GenericResponse<KebunResponse> updateKebun(
+            @PathVariable String kode,
+            @RequestBody KebunRequest request) {
+        KebunResponse updated = kebunService.updateKebun(kode, request);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully updated kebun", updated);
+    }
+
     @DeleteMapping("/{kode}")
     public GenericResponse<Void> deleteKebun(@PathVariable String kode) {
         try {
