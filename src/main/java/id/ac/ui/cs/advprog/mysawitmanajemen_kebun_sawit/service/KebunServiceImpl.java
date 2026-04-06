@@ -89,6 +89,48 @@ public class KebunServiceImpl implements KebunService {
         }
     }
 
+    @Override
+    public KebunResponse assignMandor(String kodeKebun, String mandorId) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun kebun = optionalKebun.get();
+        kebun.setMandorId(mandorId);
+        Kebun updated = kebunRepository.save(kebun);
+        return toResponse(updated);
+    }
+
+    @Override
+    public KebunResponse unassignMandor(String kodeKebun, String targetKebunKode) {
+        Optional<Kebun> optionalCurrentKebun = kebunRepository.findById(kodeKebun);
+        if (optionalCurrentKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun currentKebun = optionalCurrentKebun.get();
+        String currentMandorId = currentKebun.getMandorId();
+
+        if (currentMandorId == null) {
+            return toResponse(currentKebun);
+        }
+
+        currentKebun.setMandorId(null);
+        kebunRepository.save(currentKebun);
+
+        if (targetKebunKode != null && !targetKebunKode.isBlank()) {
+            Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
+            if (optionalTargetKebun.isPresent()) {
+                Kebun targetKebun = optionalTargetKebun.get();
+                targetKebun.setMandorId(currentMandorId);
+                kebunRepository.save(targetKebun);
+            }
+        }
+
+        return toResponse(currentKebun);
+    }
+
     private KebunResponse toResponse(Kebun kebun) {
         return new KebunResponse(
                 kebun.getKodeKebun(),

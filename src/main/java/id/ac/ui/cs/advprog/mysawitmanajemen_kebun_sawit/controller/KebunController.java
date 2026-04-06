@@ -60,4 +60,26 @@ public class KebunController {
             return GenericResponse.error(400, e.getMessage());
         }
     }
+
+    @PostMapping("/{kode}/mandor")
+    public GenericResponse<KebunResponse> assignMandor(
+            @PathVariable String kode,
+            @RequestParam String mandorId) {
+        KebunResponse updated = kebunService.assignMandor(kode, mandorId);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully assigned mandor", updated);
+    }
+
+    @DeleteMapping("/{kode}/mandor")
+    public GenericResponse<KebunResponse> unassignMandor(
+            @PathVariable String kode,
+            @RequestParam(required = false) String targetKebunKode) {
+        KebunResponse updated = kebunService.unassignMandor(kode, targetKebunKode);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully unassigned mandor", updated);
+    }
 }
