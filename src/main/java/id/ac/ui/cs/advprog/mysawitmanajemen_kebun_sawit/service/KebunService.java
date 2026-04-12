@@ -13,4 +13,6 @@ public interface KebunService {
     void deleteKebun(String kodeKebun);
     KebunResponse assignMandor(String kodeKebun, String mandorId);
     KebunResponse unassignMandor(String kodeKebun, String targetKebunKode);
+    KebunResponse assignSupir(String kodeKebun, String supirId);
+    KebunResponse unassignSupir(String kodeKebun, String supirId, String targetKebunKode);
 }
