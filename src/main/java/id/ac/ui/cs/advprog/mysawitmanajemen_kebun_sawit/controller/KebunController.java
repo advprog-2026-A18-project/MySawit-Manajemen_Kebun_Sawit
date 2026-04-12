@@ -82,4 +82,27 @@ public class KebunController {
         }
         return GenericResponse.success("Successfully unassigned mandor", updated);
     }
+
+    @PostMapping("/{kode}/supir")
+    public GenericResponse<KebunResponse> assignSupir(
+            @PathVariable String kode,
+            @RequestParam String supirId) {
+        KebunResponse updated = kebunService.assignSupir(kode, supirId);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully assigned supir", updated);
+    }
+
+    @DeleteMapping("/{kode}/supir/{supirId}")
+    public GenericResponse<KebunResponse> unassignSupir(
+            @PathVariable String kode,
+            @PathVariable String supirId,
+            @RequestParam(required = false) String targetKebunKode) {
+        KebunResponse updated = kebunService.unassignSupir(kode, supirId, targetKebunKode);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully unassigned supir", updated);
+    }
 }

@@ -131,6 +131,56 @@ public class KebunServiceImpl implements KebunService {
         return toResponse(currentKebun);
     }
 
+    @Override
+    public KebunResponse assignSupir(String kodeKebun, String supirId) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun kebun = optionalKebun.get();
+        if (kebun.getSupirIds() == null) {
+            kebun.setSupirIds(new java.util.ArrayList<>());
+        }
+
+        if (!kebun.getSupirIds().contains(supirId)) {
+            kebun.getSupirIds().add(supirId);
+            Kebun updated = kebunRepository.save(kebun);
+            return toResponse(updated);
+        }
+        return toResponse(kebun);
+    }
+
+    @Override
+    public KebunResponse unassignSupir(String kodeKebun, String supirId, String targetKebunKode) {
+        Optional<Kebun> optionalCurrentKebun = kebunRepository.findById(kodeKebun);
+        if (optionalCurrentKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun currentKebun = optionalCurrentKebun.get();
+        if (currentKebun.getSupirIds() != null && currentKebun.getSupirIds().contains(supirId)) {
+            currentKebun.getSupirIds().remove(supirId);
+            kebunRepository.save(currentKebun);
+        }
+
+        if (targetKebunKode != null && !targetKebunKode.isBlank()) {
+            Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
+            if (optionalTargetKebun.isPresent()) {
+                Kebun targetKebun = optionalTargetKebun.get();
+                if (targetKebun.getSupirIds() == null) {
+                    targetKebun.setSupirIds(new java.util.ArrayList<>());
+                }
+                if (!targetKebun.getSupirIds().contains(supirId)) {
+                    targetKebun.getSupirIds().add(supirId);
+                    kebunRepository.save(targetKebun);
+                }
+            }
+        }
+
+        return toResponse(currentKebun);
+    }
+
     private KebunResponse toResponse(Kebun kebun) {
         return new KebunResponse(
                 kebun.getKodeKebun(),
