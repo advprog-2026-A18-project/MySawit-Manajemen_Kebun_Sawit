@@ -104,26 +104,39 @@ class KebunControllerTest {
     @Test
     void testGetKebunById_ReturnsKebun() {
         KebunResponse expected = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", "M001", null, Collections.emptyList());
-        when(kebunService.getKebunById("KB001")).thenReturn(expected);
+        when(kebunService.getKebunById("KB001", null)).thenReturn(expected);
 
-        GenericResponse<KebunResponse> result = kebunController.getKebunById("KB001");
+        GenericResponse<KebunResponse> result = kebunController.getKebunById("KB001", null);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
         assertEquals("KB001", result.getData().getKodeKebun());
         assertEquals("Kebun Makmur", result.getData().getNamaKebun());
-        verify(kebunService, times(1)).getKebunById("KB001");
+        verify(kebunService, times(1)).getKebunById("KB001", null);
     }
 
     @Test
     void testGetKebunById_Returns404WhenNotFound() {
-        when(kebunService.getKebunById("KB999")).thenReturn(null);
+        when(kebunService.getKebunById("KB999", null)).thenReturn(null);
 
-        GenericResponse<KebunResponse> result = kebunController.getKebunById("KB999");
+        GenericResponse<KebunResponse> result = kebunController.getKebunById("KB999", null);
 
         assertNotNull(result);
         assertEquals(404, result.getStatusCode());
         assertEquals("Kebun not found", result.getMessage());
-        verify(kebunService, times(1)).getKebunById("KB999");
+        verify(kebunService, times(1)).getKebunById("KB999", null);
+    }
+
+    @Test
+    void testGetKebunById_WithSupirFilter() {
+        List<String> supirIds = List.of("SUP001", "SUP002");
+        KebunResponse expected = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, supirIds);
+        when(kebunService.getKebunById("KB001", "SUP")).thenReturn(expected);
+
+        GenericResponse<KebunResponse> result = kebunController.getKebunById("KB001", "SUP");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        verify(kebunService, times(1)).getKebunById("KB001", "SUP");
     }
 }
