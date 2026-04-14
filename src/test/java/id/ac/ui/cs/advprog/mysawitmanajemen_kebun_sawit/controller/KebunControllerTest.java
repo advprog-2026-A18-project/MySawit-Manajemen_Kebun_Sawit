@@ -126,4 +126,74 @@ class KebunControllerTest {
         assertEquals("Kebun not found", result.getMessage());
         verify(kebunService, times(1)).getKebunById("KB999");
     }
+
+    // ===== Tests for Assign/Unassign Mandor =====
+
+    @Test
+    void testAssignMandor_ReturnsSuccess() {
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", "M001", null, Collections.emptyList());
+        when(kebunService.assignMandor("KB001", "M001")).thenReturn(updated);
+
+        GenericResponse<KebunResponse> result = kebunController.assignMandor("KB001", "M001");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        assertEquals("M001", result.getData().getMandorId());
+    }
+
+    @Test
+    void testAssignMandor_Returns404WhenNotFound() {
+        when(kebunService.assignMandor("KB999", "M001")).thenReturn(null);
+
+        GenericResponse<KebunResponse> result = kebunController.assignMandor("KB999", "M001");
+
+        assertNotNull(result);
+        assertEquals(404, result.getStatusCode());
+    }
+
+    @Test
+    void testUnassignMandor_ReturnsSuccess() {
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, Collections.emptyList());
+        when(kebunService.unassignMandor("KB001", "KB002")).thenReturn(updated);
+
+        GenericResponse<KebunResponse> result = kebunController.unassignMandor("KB001", "KB002");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+    }
+
+    // ===== Tests for Assign/Unassign Supir =====
+
+    @Test
+    void testAssignSupir_ReturnsSuccess() {
+        List<String> supirIds = List.of("SUP001");
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, supirIds);
+        when(kebunService.assignSupir("KB001", "SUP001")).thenReturn(updated);
+
+        GenericResponse<KebunResponse> result = kebunController.assignSupir("KB001", "SUP001");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+    }
+
+    @Test
+    void testUnassignSupir_ReturnsSuccess() {
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, Collections.emptyList());
+        when(kebunService.unassignSupir("KB001", "SUP001", "KB002")).thenReturn(updated);
+
+        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB001", "SUP001", "KB002");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+    }
+
+    @Test
+    void testUnassignSupir_Returns404WhenNotFound() {
+        when(kebunService.unassignSupir("KB999", "SUP001", null)).thenReturn(null);
+
+        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB999", "SUP001", null);
+
+        assertNotNull(result);
+        assertEquals(404, result.getStatusCode());
+    }
 }
