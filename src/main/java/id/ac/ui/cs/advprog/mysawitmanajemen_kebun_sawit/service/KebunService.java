@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface KebunService {
     List<KebunResponse> getAllKebun(String searchNama, String searchKode);
-    KebunResponse getKebunById(String kodeKebun);
+    KebunResponse getKebunById(String kodeKebun, String searchSupirNama);
     KebunResponse createKebun(KebunRequest request);
     KebunResponse updateKebun(String kodeKebun, KebunRequest request);
     void deleteKebun(String kodeKebun);

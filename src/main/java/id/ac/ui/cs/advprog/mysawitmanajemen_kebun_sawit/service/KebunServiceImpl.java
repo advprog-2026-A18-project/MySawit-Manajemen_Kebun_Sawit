@@ -35,12 +35,24 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
-    public KebunResponse getKebunById(String kodeKebun) {
+    public KebunResponse getKebunById(String kodeKebun, String searchSupirNama) {
         Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
         if (optionalKebun.isEmpty()) {
             return null;
         }
-        return toResponse(optionalKebun.get());
+
+        Kebun kebun = optionalKebun.get();
+        KebunResponse response = toResponse(kebun);
+
+        // Filter supir by nama (search term)
+        if (searchSupirNama != null && !searchSupirNama.isBlank() && response.getSupirIds() != null) {
+            List<String> filteredSupirs = response.getSupirIds().stream()
+                .filter(supirId -> supirId.toLowerCase().contains(searchSupirNama.toLowerCase()))
+                .collect(Collectors.toList());
+            response.setSupirIds(filteredSupirs);
+        }
+
+        return response;
     }
 
     @Override
