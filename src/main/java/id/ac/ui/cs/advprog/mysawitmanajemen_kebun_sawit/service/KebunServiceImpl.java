@@ -114,6 +114,8 @@ public class KebunServiceImpl implements KebunService {
         } catch (Exception e) {
             return new double[]{0, 0, 0, 0};
         }
+    }
+
     @Override
     public KebunResponse updateKebun(String kodeKebun, KebunRequest request) {
         Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
