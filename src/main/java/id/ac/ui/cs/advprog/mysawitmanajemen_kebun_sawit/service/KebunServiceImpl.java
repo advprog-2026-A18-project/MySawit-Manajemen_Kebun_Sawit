@@ -35,12 +35,24 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
-    public KebunResponse getKebunById(String kodeKebun) {
+    public KebunResponse getKebunById(String kodeKebun, String searchSupirNama) {
         Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
         if (optionalKebun.isEmpty()) {
             return null;
         }
-        return toResponse(optionalKebun.get());
+
+        Kebun kebun = optionalKebun.get();
+        KebunResponse response = toResponse(kebun);
+
+        // Filter supir by nama (search term)
+        if (searchSupirNama != null && !searchSupirNama.isBlank() && response.getSupirIds() != null) {
+            List<String> filteredSupirs = response.getSupirIds().stream()
+                .filter(supirId -> supirId.toLowerCase().contains(searchSupirNama.toLowerCase()))
+                .collect(Collectors.toList());
+            response.setSupirIds(filteredSupirs);
+        }
+
+        return response;
     }
 
     @Override
@@ -102,6 +114,130 @@ public class KebunServiceImpl implements KebunService {
         } catch (Exception e) {
             return new double[]{0, 0, 0, 0};
         }
+    @Override
+    public KebunResponse updateKebun(String kodeKebun, KebunRequest request) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun kebun = optionalKebun.get();
+        if (request.getNamaKebun() != null) {
+            kebun.setNamaKebun(request.getNamaKebun());
+        }
+        if (request.getLuasHektare() != null) {
+            kebun.setLuasHektare(request.getLuasHektare());
+        }
+        if (request.getKoordinat() != null) {
+            kebun.setKoordinat(request.getKoordinat());
+        }
+
+        Kebun updated = kebunRepository.save(kebun);
+        return toResponse(updated);
+    }
+
+    @Override
+    public void deleteKebun(String kodeKebun) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isPresent()) {
+            Kebun kebun = optionalKebun.get();
+            if (kebun.getMandorId() != null) {
+                throw new IllegalStateException("Cannot delete kebun with assigned mandor");
+            }
+            kebunRepository.deleteById(kodeKebun);
+        }
+    }
+
+    @Override
+    public KebunResponse assignMandor(String kodeKebun, String mandorId) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun kebun = optionalKebun.get();
+        kebun.setMandorId(mandorId);
+        Kebun updated = kebunRepository.save(kebun);
+        return toResponse(updated);
+    }
+
+    @Override
+    public KebunResponse unassignMandor(String kodeKebun, String targetKebunKode) {
+        Optional<Kebun> optionalCurrentKebun = kebunRepository.findById(kodeKebun);
+        if (optionalCurrentKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun currentKebun = optionalCurrentKebun.get();
+        String currentMandorId = currentKebun.getMandorId();
+
+        if (currentMandorId == null) {
+            return toResponse(currentKebun);
+        }
+
+        currentKebun.setMandorId(null);
+        kebunRepository.save(currentKebun);
+
+        if (targetKebunKode != null && !targetKebunKode.isBlank()) {
+            Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
+            if (optionalTargetKebun.isPresent()) {
+                Kebun targetKebun = optionalTargetKebun.get();
+                targetKebun.setMandorId(currentMandorId);
+                kebunRepository.save(targetKebun);
+            }
+        }
+
+        return toResponse(currentKebun);
+    }
+
+    @Override
+    public KebunResponse assignSupir(String kodeKebun, String supirId) {
+        Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
+        if (optionalKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun kebun = optionalKebun.get();
+        if (kebun.getSupirIds() == null) {
+            kebun.setSupirIds(new java.util.ArrayList<>());
+        }
+
+        if (!kebun.getSupirIds().contains(supirId)) {
+            kebun.getSupirIds().add(supirId);
+            Kebun updated = kebunRepository.save(kebun);
+            return toResponse(updated);
+        }
+        return toResponse(kebun);
+    }
+
+    @Override
+    public KebunResponse unassignSupir(String kodeKebun, String supirId, String targetKebunKode) {
+        Optional<Kebun> optionalCurrentKebun = kebunRepository.findById(kodeKebun);
+        if (optionalCurrentKebun.isEmpty()) {
+            return null;
+        }
+
+        Kebun currentKebun = optionalCurrentKebun.get();
+        if (currentKebun.getSupirIds() != null && currentKebun.getSupirIds().contains(supirId)) {
+            currentKebun.getSupirIds().remove(supirId);
+            kebunRepository.save(currentKebun);
+        }
+
+        if (targetKebunKode != null && !targetKebunKode.isBlank()) {
+            Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
+            if (optionalTargetKebun.isPresent()) {
+                Kebun targetKebun = optionalTargetKebun.get();
+                if (targetKebun.getSupirIds() == null) {
+                    targetKebun.setSupirIds(new java.util.ArrayList<>());
+                }
+                if (!targetKebun.getSupirIds().contains(supirId)) {
+                    targetKebun.getSupirIds().add(supirId);
+                    kebunRepository.save(targetKebun);
+                }
+            }
+        }
+
+        return toResponse(currentKebun);
     }
 
     private KebunResponse toResponse(Kebun kebun) {

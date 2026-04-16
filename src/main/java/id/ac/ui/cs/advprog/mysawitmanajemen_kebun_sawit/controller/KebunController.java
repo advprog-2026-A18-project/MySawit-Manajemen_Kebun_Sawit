@@ -26,8 +26,10 @@ public class KebunController {
     }
 
     @GetMapping("/{kode}")
-    public GenericResponse<KebunResponse> getKebunById(@PathVariable String kode) {
-        KebunResponse kebun = kebunService.getKebunById(kode);
+    public GenericResponse<KebunResponse> getKebunById(
+            @PathVariable String kode,
+            @RequestParam(required = false) String searchSupirNama) {
+        KebunResponse kebun = kebunService.getKebunById(kode, searchSupirNama);
         if (kebun == null) {
             return GenericResponse.error(404, "Kebun not found");
         }
@@ -38,5 +40,71 @@ public class KebunController {
     public GenericResponse<KebunResponse> createKebun(@RequestBody KebunRequest request) {
         KebunResponse created = kebunService.createKebun(request);
         return GenericResponse.success("Successfully created kebun", created);
+    }
+
+    @PutMapping("/{kode}")
+    public GenericResponse<KebunResponse> updateKebun(
+            @PathVariable String kode,
+            @RequestBody KebunRequest request) {
+        KebunResponse updated = kebunService.updateKebun(kode, request);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully updated kebun", updated);
+    }
+
+    @DeleteMapping("/{kode}")
+    public GenericResponse<Void> deleteKebun(@PathVariable String kode) {
+        try {
+            kebunService.deleteKebun(kode);
+            return GenericResponse.success("Successfully deleted kebun", null);
+        } catch (IllegalStateException e) {
+            return GenericResponse.error(400, e.getMessage());
+        }
+    }
+
+    @PostMapping("/{kode}/mandor")
+    public GenericResponse<KebunResponse> assignMandor(
+            @PathVariable String kode,
+            @RequestParam String mandorId) {
+        KebunResponse updated = kebunService.assignMandor(kode, mandorId);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully assigned mandor", updated);
+    }
+
+    @DeleteMapping("/{kode}/mandor")
+    public GenericResponse<KebunResponse> unassignMandor(
+            @PathVariable String kode,
+            @RequestParam(required = false) String targetKebunKode) {
+        KebunResponse updated = kebunService.unassignMandor(kode, targetKebunKode);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully unassigned mandor", updated);
+    }
+
+    @PostMapping("/{kode}/supir")
+    public GenericResponse<KebunResponse> assignSupir(
+            @PathVariable String kode,
+            @RequestParam String supirId) {
+        KebunResponse updated = kebunService.assignSupir(kode, supirId);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully assigned supir", updated);
+    }
+
+    @DeleteMapping("/{kode}/supir/{supirId}")
+    public GenericResponse<KebunResponse> unassignSupir(
+            @PathVariable String kode,
+            @PathVariable String supirId,
+            @RequestParam(required = false) String targetKebunKode) {
+        KebunResponse updated = kebunService.unassignSupir(kode, supirId, targetKebunKode);
+        if (updated == null) {
+            return GenericResponse.error(404, "Kebun not found");
+        }
+        return GenericResponse.success("Successfully unassigned supir", updated);
     }
 }
