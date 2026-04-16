@@ -1,5 +1,6 @@
 spring:
   datasource:
+    # Database credentials are injected via environment variables at deployment time
     url: ${M_KEBUN_SAWIT_DB_URL}
     username: ${M_KEBUN_SAWIT_DB_USER}
     password: ${M_KEBUN_SAWIT_DB_PASSWORD}
