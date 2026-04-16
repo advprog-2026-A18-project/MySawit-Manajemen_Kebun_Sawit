@@ -26,8 +26,10 @@ public class KebunController {
     }
 
     @GetMapping("/{kode}")
-    public GenericResponse<KebunResponse> getKebunById(@PathVariable String kode) {
-        KebunResponse kebun = kebunService.getKebunById(kode);
+    public GenericResponse<KebunResponse> getKebunById(
+            @PathVariable String kode,
+            @RequestParam(required = false) String searchSupirNama) {
+        KebunResponse kebun = kebunService.getKebunById(kode, searchSupirNama);
         if (kebun == null) {
             return GenericResponse.error(404, "Kebun not found");
         }

@@ -130,7 +130,7 @@ class KebunServiceImplTest {
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
 
-        KebunResponse result = kebunService.getKebunById("KB001");
+        KebunResponse result = kebunService.getKebunById("KB001", null);
 
         assertNotNull(result);
         assertEquals("KB001", result.getKodeKebun());
@@ -143,7 +143,7 @@ class KebunServiceImplTest {
     void testGetKebunById_NotFound() {
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
 
-        KebunResponse result = kebunService.getKebunById("KB999");
+        KebunResponse result = kebunService.getKebunById("KB999", null);
 
         assertNull(result);
     }
