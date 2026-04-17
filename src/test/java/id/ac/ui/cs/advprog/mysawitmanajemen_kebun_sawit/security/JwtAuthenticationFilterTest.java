@@ -64,4 +64,27 @@ class JwtAuthenticationFilterTest {
 
         verify(filterChain).doFilter(request, response);
     }
+
+    @Test
+    void testDoFilterInternal_NoBearerPrefix() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Basic abc");
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void testDoFilterInternal_AlreadyAuthenticated() throws Exception {
+        String validToken = "valid.jwt.token";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
+        when(jwtUtils.validateToken(validToken)).thenReturn(true);
+        when(jwtUtils.getEmailFromToken(validToken)).thenReturn("test@example.com");
+        when(jwtUtils.getRoleFromToken(validToken)).thenReturn("MANDOR");
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain, times(2)).doFilter(request, response);
+    }
 }
