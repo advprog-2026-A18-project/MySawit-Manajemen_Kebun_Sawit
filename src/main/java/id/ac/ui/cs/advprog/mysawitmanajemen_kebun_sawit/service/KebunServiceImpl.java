@@ -84,8 +84,14 @@ public class KebunServiceImpl implements KebunService {
         double[] bounds1 = parseKoordinat(coord1);
         double[] bounds2 = parseKoordinat(coord2);
 
-        double minX1 = bounds1[0], maxX1 = bounds1[1], minY1 = bounds1[2], maxY1 = bounds1[3];
-        double minX2 = bounds2[0], maxX2 = bounds2[1], minY2 = bounds2[2], maxY2 = bounds2[3];
+        double minX1 = bounds1[0];
+        double maxX1 = bounds1[1];
+        double minY1 = bounds1[2];
+        double maxY1 = bounds1[3];
+        double minX2 = bounds2[0];
+        double maxX2 = bounds2[1];
+        double minY2 = bounds2[2];
+        double maxY2 = bounds2[3];
 
         boolean overlapX = maxX1 > minX2 && minX1 < maxX2;
         boolean overlapY = maxY1 > minY2 && minY1 < maxY2;
@@ -95,8 +101,10 @@ public class KebunServiceImpl implements KebunService {
 
     private double[] parseKoordinat(String coordJson) {
         try {
-            double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
-            double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
+            double minX = Double.MAX_VALUE;
+            double maxX = Double.MIN_VALUE;
+            double minY = Double.MAX_VALUE;
+            double maxY = Double.MIN_VALUE;
 
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"lat\":\\s*([\\d.]+).*?\"lng\":\\s*([\\d.]+)");
             java.util.regex.Matcher matcher = pattern.matcher(coordJson);
