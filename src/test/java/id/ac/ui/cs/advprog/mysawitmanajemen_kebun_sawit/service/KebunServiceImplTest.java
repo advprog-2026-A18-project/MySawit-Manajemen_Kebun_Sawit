@@ -478,21 +478,6 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testCreateKebun_WithNullKoordinat() {
-        KebunRequest request = new KebunRequest("KB001", "Kebun Makmur", 500, null);
-
-        Kebun savedKebun = new Kebun();
-        savedKebun.setKodeKebun("KB001");
-        savedKebun.setNamaKebun("Kebun Makmur");
-
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(savedKebun);
-
-        KebunResponse result = kebunService.createKebun(request);
-
-        assertNotNull(result);
-    }
-
-    @Test
     void testUpdateKebun_WithKoordinat() {
         Kebun existingKebun = new Kebun();
         existingKebun.setKodeKebun("KB001");

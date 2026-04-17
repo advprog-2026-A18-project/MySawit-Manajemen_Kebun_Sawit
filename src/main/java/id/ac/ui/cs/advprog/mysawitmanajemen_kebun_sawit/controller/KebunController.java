@@ -14,6 +14,8 @@ import java.util.List;
 @RequestMapping("/api/kebun")
 public class KebunController {
 
+    private static final String KEBUN_NOT_FOUND = "Kebun not found";
+
     @Autowired
     private KebunService kebunService;
 
@@ -32,7 +34,7 @@ public class KebunController {
             @RequestParam(required = false) String searchSupirNama) {
         KebunResponse kebun = kebunService.getKebunById(kode, searchSupirNama);
         if (kebun == null) {
-            return GenericResponse.error(404, "Kebun not found");
+            return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
         return GenericResponse.success("Successfully retrieved kebun", kebun);
     }
@@ -49,7 +51,7 @@ public class KebunController {
             @RequestBody KebunRequest request) {
         KebunResponse updated = kebunService.updateKebun(kode, request);
         if (updated == null) {
-            return GenericResponse.error(404, "Kebun not found");
+            return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
         return GenericResponse.success("Successfully updated kebun", updated);
     }
@@ -70,7 +72,7 @@ public class KebunController {
             @RequestParam String mandorId) {
         KebunResponse updated = kebunService.assignMandor(kode, mandorId);
         if (updated == null) {
-            return GenericResponse.error(404, "Kebun not found");
+            return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
         return GenericResponse.success("Successfully assigned mandor", updated);
     }
@@ -81,7 +83,7 @@ public class KebunController {
             @RequestParam(required = false) String targetKebunKode) {
         KebunResponse updated = kebunService.unassignMandor(kode, targetKebunKode);
         if (updated == null) {
-            return GenericResponse.error(404, "Kebun not found");
+            return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
         return GenericResponse.success("Successfully unassigned mandor", updated);
     }
@@ -92,7 +94,7 @@ public class KebunController {
             @RequestParam String supirId) {
         KebunResponse updated = kebunService.assignSupir(kode, supirId);
         if (updated == null) {
-            return GenericResponse.error(404, "Kebun not found");
+            return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
         return GenericResponse.success("Successfully assigned supir", updated);
     }
@@ -104,7 +106,7 @@ public class KebunController {
             @RequestParam(required = false) String targetKebunKode) {
         KebunResponse updated = kebunService.unassignSupir(kode, supirId, targetKebunKode);
         if (updated == null) {
-            return GenericResponse.error(404, "Kebun not found");
+            return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
         return GenericResponse.success("Successfully unassigned supir", updated);
     }

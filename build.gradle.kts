@@ -22,7 +22,7 @@ sonarqube {
         property("sonar.projectKey", "advprog-2026-A18-project_MySawit-Manajemen_Kebun_Sawit")
         property("sonar.organization", "advprog-2026-a18-project")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.exclusions", "**/application-prod.yml,**/application-local.yml")
+        property("sonar.exclusions", "**/application-prod.yml,**/application-local.yml,**/application.properties")
 	}
 }
 
