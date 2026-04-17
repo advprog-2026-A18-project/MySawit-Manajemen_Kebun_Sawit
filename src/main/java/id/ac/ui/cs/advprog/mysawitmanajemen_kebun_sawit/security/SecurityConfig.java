@@ -44,8 +44,12 @@ public class SecurityConfig {
                     .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
             return http.build();
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (IllegalStateException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to configure security filter chain", e);
+            throw new IllegalStateException("Failed to configure security filter chain", e);
         }
     }
 
