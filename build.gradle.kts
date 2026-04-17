@@ -59,22 +59,31 @@ repositories {
 }
 
 dependencies {
-    // Security
+    // Security dependencies
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("me.paulschwarz:spring-dotenv:$dotenvVersion")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
+    // Web dependencies
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    // Database dependencies
     implementation("org.flywaydb:flyway-core:9.22.0")
     implementation("org.postgresql:postgresql:42.7.3")
+
+    // Lombok
     compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    // Spring Boot DevTools
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    annotationProcessor("org.projectlombok:lombok")
+
+    // Test dependencies
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
