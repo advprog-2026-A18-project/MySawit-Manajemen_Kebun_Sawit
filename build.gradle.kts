@@ -1,4 +1,8 @@
 import org.gradle.api.plugins.quality.CheckstyleExtension;
+
+val jjwtVersion = "0.12.6"
+val dotenvVersion = "4.0.0"
+
 plugins {
     java
     id("org.springframework.boot") version "4.0.2"
@@ -18,7 +22,7 @@ sonarqube {
         property("sonar.projectKey", "advprog-2026-A18-project_MySawit-Manajemen_Kebun_Sawit")
         property("sonar.organization", "advprog-2026-a18-project")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.exclusions", "**/application-prod.yml")
+        property("sonar.exclusions", "**/application-prod.yml,**/application-local.yml")
 	}
 }
 
@@ -55,6 +59,13 @@ repositories {
 }
 
 dependencies {
+    // Security
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("me.paulschwarz:spring-dotenv:$dotenvVersion")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
