@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,18 +36,10 @@ class JwtAuthenticationFilterTest {
         jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtUtils);
     }
 
-    @Test
-    void testDoFilterInternal_NoAuthHeader() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn(null);
-
-        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
-
-        verify(filterChain).doFilter(request, response);
-    }
-
-    @Test
-    void testDoFilterInternal_InvalidAuthHeader() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn("InvalidToken");
+    @ParameterizedTest
+    @NullAndEmptySource
+    void testDoFilterInternal_NoAuthHeader(String authHeader) throws Exception {
+        when(request.getHeader("Authorization")).thenReturn(authHeader);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
