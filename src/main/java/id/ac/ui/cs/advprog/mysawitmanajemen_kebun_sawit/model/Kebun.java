@@ -26,7 +26,7 @@ public class Kebun {
     @Column(name = "luas_hektare", nullable = false)
     private Integer luasHektare;
 
-    @Column(name = "koordinat", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "koordinat", nullable = false)
     private String koordinat;
 
     @Column(name = "created_at", columnDefinition = "timestamp with time zone", nullable = false, updatable = false)

@@ -4,18 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class KebunResponse {
+public class KebunRequest {
     private String kodeKebun;
     private String namaKebun;
     private Integer luasHektare;
     private String koordinat;
-    private String mandorId;
-    private OffsetDateTime createdAt;
-    private List<String> supirIds;
 }
