@@ -1,4 +1,4 @@
-import org.gradle.api.plugins.quality.CheckstyleExtension;
+import org.gradle.api.plugins.quality.CheckstyleExtension
 
 val jjwtVersion = "0.12.6"
 val dotenvVersion = "4.0.0"
@@ -59,36 +59,36 @@ repositories {
 }
 
 dependencies {
-    // Security dependencies
+    // implementation
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("me.paulschwarz:spring-dotenv:$dotenvVersion")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
-
-    // Web dependencies
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
-    // Database dependencies
     implementation("org.flywaydb:flyway-core:9.22.0")
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.h2database:h2")
 
-    // Lombok
+    // compileOnly
     compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
 
-    // Spring Boot DevTools
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    // runtimeOnly
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+
+    // annotationProcessor
+    annotationProcessor("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-    // Test dependencies
+    // developmentOnly
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // testImplementation
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.h2database:h2")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
+
+    // testRuntimeOnly
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-
-// Ensure test task uses JUnit Platform
