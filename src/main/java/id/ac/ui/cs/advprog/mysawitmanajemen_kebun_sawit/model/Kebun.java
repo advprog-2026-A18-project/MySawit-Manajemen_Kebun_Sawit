@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -26,24 +27,45 @@ public class Kebun {
     @Column(name = "luas_hektare", nullable = false)
     private Integer luasHektare;
 
-    @Column(name = "koordinat", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "koordinat", nullable = false)
     private String koordinat;
 
     @Column(name = "created_at", columnDefinition = "timestamp with time zone", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     @Column(name = "mandor_id")
-    private String mandorId;
+    private UUID mandorId;
 
-    @ElementCollection
-    @CollectionTable(name = "kebun_supir", joinColumns = @JoinColumn(name = "kode_kebun"))
-    @Column(name = "supir_id")
-    private List<String> supirIds = new ArrayList<>();
+    @Column(name = "mandor_nama")
+    private String mandorNama;
+
+    @OneToMany(mappedBy = "kodeKebun", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<KebunSupir> supirList = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {
             createdAt = OffsetDateTime.now();
         }
+    }
+
+    public void addSupir(UUID supirId, String namaSupir) {
+        KebunSupir supir = new KebunSupir();
+        supir.setKodeKebun(this.kodeKebun);
+        supir.setSupirId(supirId);
+        supir.setNamaSupir(namaSupir);
+        supirList.add(supir);
+    }
+
+    public void removeSupir(UUID supirId) {
+        supirList.removeIf(s -> s.getSupirId().equals(supirId));
+    }
+
+    public List<UUID> getSupirIds() {
+        return supirList.stream().map(KebunSupir::getSupirId).toList();
+    }
+
+    public List<String> getSupirNamas() {
+        return supirList.stream().map(KebunSupir::getNamaSupir).toList();
     }
 }

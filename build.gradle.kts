@@ -1,4 +1,8 @@
-import org.gradle.api.plugins.quality.CheckstyleExtension;
+import org.gradle.api.plugins.quality.CheckstyleExtension
+
+val jjwtVersion = "0.12.6"
+val dotenvVersion = "4.0.0"
+
 plugins {
     java
     id("org.springframework.boot") version "4.0.2"
@@ -18,6 +22,7 @@ sonarqube {
         property("sonar.projectKey", "advprog-2026-A18-project_MySawit-Manajemen_Kebun_Sawit")
         property("sonar.organization", "advprog-2026-a18-project")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.exclusions", "**/application-prod.yml,**/application-local.yml,**/application.properties")
 	}
 }
 
@@ -49,23 +54,46 @@ configurations {
     }
 }
 
+// Enable dependency locking for all configurations
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // implementation
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("me.paulschwarz:spring-dotenv:$dotenvVersion")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.flywaydb:flyway-core:9.22.0")
     implementation("org.postgresql:postgresql:42.7.3")
+    implementation("com.h2database:h2")
+
+    // compileOnly
     compileOnly("org.projectlombok:lombok")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    // runtimeOnly
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+
+    // annotationProcessor
     annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    // developmentOnly
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // testImplementation
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.h2database:h2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+
+    // testRuntimeOnly
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-
-// Ensure test task uses JUnit Platform
