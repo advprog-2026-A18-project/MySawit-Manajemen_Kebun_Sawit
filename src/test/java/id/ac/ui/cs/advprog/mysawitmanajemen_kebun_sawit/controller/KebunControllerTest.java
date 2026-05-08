@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.controller;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.AssignMandorRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.AssignSupirRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.KebunService;
 import org.junit.jupiter.api.BeforeEach;
@@ -187,6 +188,16 @@ class KebunControllerTest {
         assertEquals(200, result.getStatusCode());
     }
 
+    @Test
+    void testUnassignMandor_Returns404WhenNotFound() {
+        when(kebunService.unassignMandor("KB999", null)).thenReturn(null);
+
+        GenericResponse<KebunResponse> result = kebunController.unassignMandor("KB999", null);
+
+        assertNotNull(result);
+        assertEquals(404, result.getStatusCode());
+    }
+
     // ===== Tests for Assign/Unassign Supir =====
 
     @Test
@@ -231,6 +242,29 @@ class KebunControllerTest {
     }
 
     @Test
+    void testUpdateKebun_Returns404WhenNotFound() {
+        KebunRequest request = new KebunRequest(null, "Kebun Baru", 750, null);
+        when(kebunService.updateKebun("KB999", request)).thenReturn(null);
+
+        GenericResponse<KebunResponse> result = kebunController.updateKebun("KB999", request);
+
+        assertNotNull(result);
+        assertEquals(404, result.getStatusCode());
+    }
+
+    @Test
+    void testAssignSupir_Returns404WhenNotFound() {
+        UUID supirId = UUID.randomUUID();
+        when(kebunService.assignSupir("KB999", supirId, "Supir A")).thenReturn(null);
+
+        AssignSupirRequest request = new AssignSupirRequest(supirId, "Supir A", null);
+        GenericResponse<KebunResponse> result = kebunController.assignSupir("KB999", request);
+
+        assertNotNull(result);
+        assertEquals(404, result.getStatusCode());
+    }
+
+    @Test
     void testDeleteKebun_Returns400WhenHasMandor() {
         doThrow(new IllegalStateException("Cannot delete kebun with assigned mandor")).when(kebunService).deleteKebun("KB001");
 
@@ -249,5 +283,18 @@ class KebunControllerTest {
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
+    }
+
+    @Test
+    void testCreateKebun_ReturnsSuccess() {
+        KebunRequest request = new KebunRequest("KB001", "Kebun Baru", 500, "{}");
+        KebunResponse expected = new KebunResponse("KB001", "Kebun Baru", 500, "{}", null, null, null, Collections.emptyList(), Collections.emptyList());
+        when(kebunService.createKebun(request)).thenReturn(expected);
+
+        GenericResponse<KebunResponse> result = kebunController.createKebun(request);
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+        assertEquals("KB001", result.getData().getKodeKebun());
     }
 }
