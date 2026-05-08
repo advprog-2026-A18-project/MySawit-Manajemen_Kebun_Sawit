@@ -74,6 +74,7 @@ dependencies {
     // Database dependencies
     implementation("org.flywaydb:flyway-core:9.22.0")
     implementation("org.postgresql:postgresql:42.7.3")
+    implementation("com.h2database:h2")
 
     // Lombok
     compileOnly("org.projectlombok:lombok")

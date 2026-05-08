@@ -3,12 +3,15 @@ package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.Kebun;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.KebunSupir;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunRepository;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunSupirRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,8 +20,11 @@ public class KebunServiceImpl implements KebunService {
     @Autowired
     private KebunRepository kebunRepository;
 
+    @Autowired
+    private KebunSupirRepository kebunSupirRepository;
+
     @Override
-    public List<KebunResponse> getAllKebun(String searchNama, String searchKode) {
+    public List<KebunResponse> getAllKebun(String searchNama, String searchKode, String sortBy) {
         List<Kebun> kebunList;
 
         if (searchNama != null && !searchNama.isBlank()) {
@@ -26,7 +32,11 @@ public class KebunServiceImpl implements KebunService {
         } else if (searchKode != null && !searchKode.isBlank()) {
             kebunList = kebunRepository.findByKodeKebunContainingIgnoreCase(searchKode);
         } else {
-            kebunList = kebunRepository.findAllByOrderByCreatedAtDesc();
+            if ("createdAt".equalsIgnoreCase(sortBy)) {
+                kebunList = kebunRepository.findAllByOrderByCreatedAtDesc();
+            } else {
+                kebunList = kebunRepository.findAllByOrderByKodeKebunAsc();
+            }
         }
 
         return kebunList.stream()
@@ -42,17 +52,7 @@ public class KebunServiceImpl implements KebunService {
         }
 
         Kebun kebun = optionalKebun.get();
-        KebunResponse response = toResponse(kebun);
-
-        // Filter supir by nama (search term)
-        if (searchSupirNama != null && !searchSupirNama.isBlank() && response.getSupirIds() != null) {
-            List<String> filteredSupirs = response.getSupirIds().stream()
-                .filter(supirId -> supirId.toLowerCase().contains(searchSupirNama.toLowerCase()))
-                .collect(Collectors.toList());
-            response.setSupirIds(filteredSupirs);
-        }
-
-        return response;
+        return toResponse(kebun, searchSupirNama);
     }
 
     @Override
@@ -154,12 +154,13 @@ public class KebunServiceImpl implements KebunService {
             if (kebun.getMandorId() != null) {
                 throw new IllegalStateException("Cannot delete kebun with assigned mandor");
             }
+            kebunSupirRepository.deleteByKodeKebun(kodeKebun);
             kebunRepository.deleteById(kodeKebun);
         }
     }
 
     @Override
-    public KebunResponse assignMandor(String kodeKebun, String mandorId) {
+    public KebunResponse assignMandor(String kodeKebun, UUID mandorId, String mandorNama) {
         Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
         if (optionalKebun.isEmpty()) {
             return null;
@@ -167,6 +168,7 @@ public class KebunServiceImpl implements KebunService {
 
         Kebun kebun = optionalKebun.get();
         kebun.setMandorId(mandorId);
+        kebun.setMandorNama(mandorNama);
         Kebun updated = kebunRepository.save(kebun);
         return toResponse(updated);
     }
@@ -179,20 +181,23 @@ public class KebunServiceImpl implements KebunService {
         }
 
         Kebun currentKebun = optionalCurrentKebun.get();
-        String currentMandorId = currentKebun.getMandorId();
+        UUID currentMandorId = currentKebun.getMandorId();
+        String currentMandorNama = currentKebun.getMandorNama();
 
         if (currentMandorId == null) {
             return toResponse(currentKebun);
         }
 
         currentKebun.setMandorId(null);
+        currentKebun.setMandorNama(null);
         kebunRepository.save(currentKebun);
 
-        if (targetKebunKode != null && !targetKebunKode.isBlank()) {
+        if (targetKebunKode != null) {
             Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
             if (optionalTargetKebun.isPresent()) {
                 Kebun targetKebun = optionalTargetKebun.get();
                 targetKebun.setMandorId(currentMandorId);
+                targetKebun.setMandorNama(currentMandorNama);
                 kebunRepository.save(targetKebun);
             }
         }
@@ -201,64 +206,91 @@ public class KebunServiceImpl implements KebunService {
     }
 
     @Override
-    public KebunResponse assignSupir(String kodeKebun, String supirId) {
+    public KebunResponse assignSupir(String kodeKebun, UUID supirId, String namaSupir) {
         Optional<Kebun> optionalKebun = kebunRepository.findById(kodeKebun);
         if (optionalKebun.isEmpty()) {
             return null;
         }
 
-        Kebun kebun = optionalKebun.get();
-        if (kebun.getSupirIds() == null) {
-            kebun.setSupirIds(new java.util.ArrayList<>());
+        // Check if supir already assigned
+        List<KebunSupir> existingSupir = kebunSupirRepository.findByKodeKebun(kodeKebun);
+        boolean alreadyAssigned = existingSupir.stream()
+                .anyMatch(s -> s.getSupirId().equals(supirId));
+        if (alreadyAssigned) {
+            return toResponse(optionalKebun.get());
         }
 
-        if (!kebun.getSupirIds().contains(supirId)) {
-            kebun.getSupirIds().add(supirId);
-            Kebun updated = kebunRepository.save(kebun);
-            return toResponse(updated);
-        }
-        return toResponse(kebun);
+        // Add new supir
+        KebunSupir newSupir = new KebunSupir();
+        newSupir.setKodeKebun(kodeKebun);
+        newSupir.setSupirId(supirId);
+        newSupir.setNamaSupir(namaSupir);
+        kebunSupirRepository.save(newSupir);
+
+        return toResponse(optionalKebun.get());
     }
 
     @Override
-    public KebunResponse unassignSupir(String kodeKebun, String supirId, String targetKebunKode) {
+    public KebunResponse unassignSupir(String kodeKebun, UUID supirId, String targetKebunKode) {
         Optional<Kebun> optionalCurrentKebun = kebunRepository.findById(kodeKebun);
         if (optionalCurrentKebun.isEmpty()) {
             return null;
         }
 
-        Kebun currentKebun = optionalCurrentKebun.get();
-        if (currentKebun.getSupirIds() != null && currentKebun.getSupirIds().contains(supirId)) {
-            currentKebun.getSupirIds().remove(supirId);
-            kebunRepository.save(currentKebun);
+        // Remove from current kebun
+        Optional<KebunSupir> supirToRemove = kebunSupirRepository.findByKodeKebun(kodeKebun).stream()
+                .filter(s -> s.getSupirId().equals(supirId))
+                .findFirst();
+        String namaSupir = null;
+        if (supirToRemove.isPresent()) {
+            namaSupir = supirToRemove.get().getNamaSupir();
+            kebunSupirRepository.delete(supirToRemove.get());
         }
 
-        if (targetKebunKode != null && !targetKebunKode.isBlank()) {
-            Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
-            if (optionalTargetKebun.isPresent()) {
-                Kebun targetKebun = optionalTargetKebun.get();
-                if (targetKebun.getSupirIds() == null) {
-                    targetKebun.setSupirIds(new java.util.ArrayList<>());
-                }
-                if (!targetKebun.getSupirIds().contains(supirId)) {
-                    targetKebun.getSupirIds().add(supirId);
-                    kebunRepository.save(targetKebun);
-                }
+        // Add to target kebun
+        if (targetKebunKode != null) {
+            List<KebunSupir> targetSupirs = kebunSupirRepository.findByKodeKebun(targetKebunKode);
+            boolean alreadyAssigned = targetSupirs.stream()
+                    .anyMatch(s -> s.getSupirId().equals(supirId));
+            if (!alreadyAssigned) {
+                KebunSupir supirToAdd = new KebunSupir();
+                supirToAdd.setKodeKebun(targetKebunKode);
+                supirToAdd.setSupirId(supirId);
+                supirToAdd.setNamaSupir(namaSupir);
+                kebunSupirRepository.save(supirToAdd);
             }
         }
 
-        return toResponse(currentKebun);
+        return toResponse(optionalCurrentKebun.get());
     }
 
-    private KebunResponse toResponse(Kebun kebun) {
+    private KebunResponse toResponse(Kebun kebun, String searchSupirNama) {
+        List<KebunSupir> supirList = kebunSupirRepository.findByKodeKebun(kebun.getKodeKebun());
+
+        if (searchSupirNama != null && !searchSupirNama.isBlank()) {
+            supirList = supirList.stream()
+                    .filter(s -> s.getNamaSupir() != null &&
+                            s.getNamaSupir().toLowerCase().contains(searchSupirNama.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        List<UUID> supirIds = supirList.stream().map(KebunSupir::getSupirId).collect(Collectors.toList());
+        List<String> namaSupirs = supirList.stream().map(KebunSupir::getNamaSupir).collect(Collectors.toList());
+
         return new KebunResponse(
                 kebun.getKodeKebun(),
                 kebun.getNamaKebun(),
                 kebun.getLuasHektare(),
                 kebun.getKoordinat(),
                 kebun.getMandorId(),
+                kebun.getMandorNama(),
                 kebun.getCreatedAt(),
-                kebun.getSupirIds() != null ? kebun.getSupirIds() : List.of()
+                supirIds,
+                namaSupirs // listSupir
         );
+    }
+
+    private KebunResponse toResponse(Kebun kebun) {
+        return toResponse(kebun, null);
     }
 }

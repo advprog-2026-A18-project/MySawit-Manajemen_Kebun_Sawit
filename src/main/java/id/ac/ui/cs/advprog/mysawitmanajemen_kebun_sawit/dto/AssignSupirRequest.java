@@ -9,8 +9,8 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AssignMandorRequest {
-    private UUID mandorId;
-    private String namaMandor; // dari frontend
+public class AssignSupirRequest {
+    private UUID supirId;
+    private String namaSupir; // dari frontend
     private UUID targetKebunKode;
 }

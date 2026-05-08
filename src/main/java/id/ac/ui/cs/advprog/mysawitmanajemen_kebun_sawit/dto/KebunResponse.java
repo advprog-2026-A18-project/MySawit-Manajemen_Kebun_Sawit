@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -15,7 +16,9 @@ public class KebunResponse {
     private String namaKebun;
     private Integer luasHektare;
     private String koordinat;
-    private String mandorId;
+    private UUID mandorId;
+    private String namaMandor;
     private OffsetDateTime createdAt;
-    private List<String> supirIds;
+    private List<UUID> supirIds;
+    private List<String> listSupir;
 }

@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.controller;
 
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.AssignMandorRequest;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.AssignSupirRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
 @RestController
@@ -22,9 +25,10 @@ public class KebunController {
     @GetMapping
     public GenericResponse<List<KebunResponse>> getAllKebun(
             @RequestParam(required = false) String searchNama,
-            @RequestParam(required = false) String searchKode) {
+            @RequestParam(required = false) String searchKode,
+            @RequestParam(required = false) String sortBy) {
 
-        List<KebunResponse> kebunList = kebunService.getAllKebun(searchNama, searchKode);
+        List<KebunResponse> kebunList = kebunService.getAllKebun(searchNama, searchKode, sortBy);
         return GenericResponse.success("Successfully retrieved kebun list", kebunList);
     }
 
@@ -69,8 +73,8 @@ public class KebunController {
     @PostMapping("/{kode}/mandor")
     public GenericResponse<KebunResponse> assignMandor(
             @PathVariable String kode,
-            @RequestParam String mandorId) {
-        KebunResponse updated = kebunService.assignMandor(kode, mandorId);
+            @RequestBody AssignMandorRequest request) {
+        KebunResponse updated = kebunService.assignMandor(kode, request.getMandorId(), request.getNamaMandor());
         if (updated == null) {
             return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
@@ -80,8 +84,8 @@ public class KebunController {
     @DeleteMapping("/{kode}/mandor")
     public GenericResponse<KebunResponse> unassignMandor(
             @PathVariable String kode,
-            @RequestParam(required = false) String targetKebunKode) {
-        KebunResponse updated = kebunService.unassignMandor(kode, targetKebunKode);
+            @RequestParam(required = false) String target) {
+        KebunResponse updated = kebunService.unassignMandor(kode, target);
         if (updated == null) {
             return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
@@ -91,8 +95,8 @@ public class KebunController {
     @PostMapping("/{kode}/supir")
     public GenericResponse<KebunResponse> assignSupir(
             @PathVariable String kode,
-            @RequestParam String supirId) {
-        KebunResponse updated = kebunService.assignSupir(kode, supirId);
+            @RequestBody AssignSupirRequest request) {
+        KebunResponse updated = kebunService.assignSupir(kode, request.getSupirId(), request.getNamaSupir());
         if (updated == null) {
             return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
@@ -102,9 +106,9 @@ public class KebunController {
     @DeleteMapping("/{kode}/supir/{supirId}")
     public GenericResponse<KebunResponse> unassignSupir(
             @PathVariable String kode,
-            @PathVariable String supirId,
-            @RequestParam(required = false) String targetKebunKode) {
-        KebunResponse updated = kebunService.unassignSupir(kode, supirId, targetKebunKode);
+            @PathVariable UUID supirId,
+            @RequestParam(required = false) String target) {
+        KebunResponse updated = kebunService.unassignSupir(kode, supirId, target);
         if (updated == null) {
             return GenericResponse.error(404, KEBUN_NOT_FOUND);
         }
