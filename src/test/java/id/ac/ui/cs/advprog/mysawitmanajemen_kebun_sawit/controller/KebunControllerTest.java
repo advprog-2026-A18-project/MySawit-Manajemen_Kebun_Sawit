@@ -229,4 +229,25 @@ class KebunControllerTest {
         assertNotNull(result);
         assertEquals(404, result.getStatusCode());
     }
+
+    @Test
+    void testDeleteKebun_Returns400WhenHasMandor() {
+        doThrow(new IllegalStateException("Cannot delete kebun with assigned mandor")).when(kebunService).deleteKebun("KB001");
+
+        GenericResponse<Void> result = kebunController.deleteKebun("KB001");
+
+        assertNotNull(result);
+        assertEquals(400, result.getStatusCode());
+        assertEquals("Cannot delete kebun with assigned mandor", result.getMessage());
+    }
+
+    @Test
+    void testDeleteKebun_ReturnsSuccess() {
+        doNothing().when(kebunService).deleteKebun("KB001");
+
+        GenericResponse<Void> result = kebunController.deleteKebun("KB001");
+
+        assertNotNull(result);
+        assertEquals(200, result.getStatusCode());
+    }
 }
