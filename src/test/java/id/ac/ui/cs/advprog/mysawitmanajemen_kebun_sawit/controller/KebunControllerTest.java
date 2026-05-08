@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.controller;
 
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.AssignMandorRequest;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.AssignSupirRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.KebunService;
@@ -12,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,70 +34,70 @@ class KebunControllerTest {
 
     @Test
     void testGetAllKebun_ReturnsList() {
-        KebunResponse kebun1 = new KebunResponse("KB001", "Kebun Makmur", 500, "{\"points\": [[0, 0], [200, 0], [200, 200], [0, 200]]}", null, null, Collections.emptyList());
-        KebunResponse kebun2 = new KebunResponse("KB002", "Kebun Sejahtera", 750, "{\"points\": [[0, 0], [300, 0], [300, 250], [0, 250]]}", null, null, Collections.emptyList());
+        KebunResponse kebun1 = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, Collections.emptyList(), Collections.emptyList());
+        KebunResponse kebun2 = new KebunResponse("KB002", "Kebun Sejahtera", 750, "{}", null, null, null, Collections.emptyList(), Collections.emptyList());
 
         List<KebunResponse> expectedList = Arrays.asList(kebun1, kebun2);
-        when(kebunService.getAllKebun(null, null)).thenReturn(expectedList);
+        when(kebunService.getAllKebun(null, null, null)).thenReturn(expectedList);
 
-        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, null);
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, null, null);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
         assertEquals(2, result.getData().size());
         assertEquals("KB001", result.getData().get(0).getKodeKebun());
         assertEquals("Kebun Makmur", result.getData().get(0).getNamaKebun());
-        verify(kebunService, times(1)).getAllKebun(null, null);
+        verify(kebunService, times(1)).getAllKebun(null, null, null);
     }
 
     @Test
     void testGetAllKebun_ReturnsEmptyList() {
-        when(kebunService.getAllKebun(null, null)).thenReturn(List.of());
+        when(kebunService.getAllKebun(null, null, null)).thenReturn(List.of());
 
-        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, null);
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, null, null);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
         assertEquals(0, result.getData().size());
-        verify(kebunService, times(1)).getAllKebun(null, null);
+        verify(kebunService, times(1)).getAllKebun(null, null, null);
     }
 
     @Test
     void testGetAllKebun_WithSearch() {
         List<KebunResponse> expectedList = List.of(
-            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, Collections.emptyList())
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, Collections.emptyList(), Collections.emptyList())
         );
-        when(kebunService.getAllKebun("Makmur", null)).thenReturn(expectedList);
+        when(kebunService.getAllKebun("Makmur", null, null)).thenReturn(expectedList);
 
-        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun("Makmur", null);
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun("Makmur", null, null);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
-        verify(kebunService, times(1)).getAllKebun("Makmur", null);
+        verify(kebunService, times(1)).getAllKebun("Makmur", null, null);
     }
 
     @Test
     void testGetAllKebun_WithSearchKode() {
         List<KebunResponse> expectedList = List.of(
-            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, Collections.emptyList())
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, Collections.emptyList(), Collections.emptyList())
         );
-        when(kebunService.getAllKebun(null, "KB")).thenReturn(expectedList);
+        when(kebunService.getAllKebun(null, "KB", null)).thenReturn(expectedList);
 
-        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, "KB");
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun(null, "KB", null);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
-        verify(kebunService, times(1)).getAllKebun(null, "KB");
+        verify(kebunService, times(1)).getAllKebun(null, "KB", null);
     }
 
     @Test
     void testGetAllKebun_WithBothFilters() {
         List<KebunResponse> expectedList = List.of(
-            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, Collections.emptyList())
+            new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, Collections.emptyList(), Collections.emptyList())
         );
-        when(kebunService.getAllKebun("Makmur", "KB")).thenReturn(expectedList);
+        when(kebunService.getAllKebun("Makmur", "KB", null)).thenReturn(expectedList);
 
-        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun("Makmur", "KB");
+        GenericResponse<List<KebunResponse>> result = kebunController.getAllKebun("Makmur", "KB", null);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
@@ -103,7 +106,8 @@ class KebunControllerTest {
 
     @Test
     void testGetKebunById_ReturnsKebun() {
-        KebunResponse expected = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", "M001", null, Collections.emptyList());
+        UUID mandorId = UUID.randomUUID();
+        KebunResponse expected = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", mandorId, "Pak Mandor", null, Collections.emptyList(), Collections.emptyList());
         when(kebunService.getKebunById("KB001", null)).thenReturn(expected);
 
         GenericResponse<KebunResponse> result = kebunController.getKebunById("KB001", null);
@@ -129,8 +133,9 @@ class KebunControllerTest {
 
     @Test
     void testGetKebunById_WithSupirFilter() {
-        List<String> supirIds = List.of("SUP001", "SUP002");
-        KebunResponse expected = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, supirIds);
+        List<UUID> supirIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+        List<String> supirNamas = List.of("Supir A", "Supir B");
+        KebunResponse expected = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, supirIds, supirNamas);
         when(kebunService.getKebunById("KB001", "SUP")).thenReturn(expected);
 
         GenericResponse<KebunResponse> result = kebunController.getKebunById("KB001", "SUP");
@@ -144,21 +149,26 @@ class KebunControllerTest {
 
     @Test
     void testAssignMandor_ReturnsSuccess() {
-        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", "M001", null, Collections.emptyList());
-        when(kebunService.assignMandor("KB001", "M001")).thenReturn(updated);
+        UUID mandorId = UUID.randomUUID();
+        String namaMandor = "Pak Mandor";
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", mandorId, namaMandor, null, Collections.emptyList(), Collections.emptyList());
+        when(kebunService.assignMandor("KB001", mandorId, namaMandor)).thenReturn(updated);
 
-        GenericResponse<KebunResponse> result = kebunController.assignMandor("KB001", "M001");
+        AssignMandorRequest request = new AssignMandorRequest(mandorId, namaMandor, null);
+        GenericResponse<KebunResponse> result = kebunController.assignMandor("KB001", request);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
-        assertEquals("M001", result.getData().getMandorId());
+        assertEquals(mandorId, result.getData().getMandorId());
     }
 
     @Test
     void testAssignMandor_Returns404WhenNotFound() {
-        when(kebunService.assignMandor("KB999", "M001")).thenReturn(null);
+        UUID mandorId = UUID.randomUUID();
+        when(kebunService.assignMandor("KB999", mandorId, "Pak Mandor")).thenReturn(null);
 
-        GenericResponse<KebunResponse> result = kebunController.assignMandor("KB999", "M001");
+        AssignMandorRequest request = new AssignMandorRequest(mandorId, "Pak Mandor", null);
+        GenericResponse<KebunResponse> result = kebunController.assignMandor("KB999", request);
 
         assertNotNull(result);
         assertEquals(404, result.getStatusCode());
@@ -166,10 +176,12 @@ class KebunControllerTest {
 
     @Test
     void testUnassignMandor_ReturnsSuccess() {
-        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, Collections.emptyList());
-        when(kebunService.unassignMandor("KB001", "KB002")).thenReturn(updated);
+        UUID targetKebunKode = UUID.randomUUID();
+        String target = targetKebunKode.toString();
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, Collections.emptyList(), Collections.emptyList());
+        when(kebunService.unassignMandor("KB001", target)).thenReturn(updated);
 
-        GenericResponse<KebunResponse> result = kebunController.unassignMandor("KB001", "KB002");
+        GenericResponse<KebunResponse> result = kebunController.unassignMandor("KB001", target);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
@@ -179,11 +191,15 @@ class KebunControllerTest {
 
     @Test
     void testAssignSupir_ReturnsSuccess() {
-        List<String> supirIds = List.of("SUP001");
-        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, supirIds);
-        when(kebunService.assignSupir("KB001", "SUP001")).thenReturn(updated);
+        UUID supirId = UUID.randomUUID();
+        String supirNama = "Supir A";
+        List<UUID> supirIds = List.of(supirId);
+        List<String> supirNamas = List.of(supirNama);
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, supirIds, supirNamas);
+        when(kebunService.assignSupir("KB001", supirId, supirNama)).thenReturn(updated);
 
-        GenericResponse<KebunResponse> result = kebunController.assignSupir("KB001", "SUP001");
+        AssignSupirRequest request = new AssignSupirRequest(supirId, supirNama, null);
+        GenericResponse<KebunResponse> result = kebunController.assignSupir("KB001", request);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
@@ -191,10 +207,13 @@ class KebunControllerTest {
 
     @Test
     void testUnassignSupir_ReturnsSuccess() {
-        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, Collections.emptyList());
-        when(kebunService.unassignSupir("KB001", "SUP001", "KB002")).thenReturn(updated);
+        UUID supirId = UUID.randomUUID();
+        UUID targetKebunKode = UUID.randomUUID();
+        String target = targetKebunKode.toString();
+        KebunResponse updated = new KebunResponse("KB001", "Kebun Makmur", 500, "{}", null, null, null, Collections.emptyList(), Collections.emptyList());
+        when(kebunService.unassignSupir("KB001", supirId, target)).thenReturn(updated);
 
-        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB001", "SUP001", "KB002");
+        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB001", supirId, target);
 
         assertNotNull(result);
         assertEquals(200, result.getStatusCode());
@@ -202,9 +221,10 @@ class KebunControllerTest {
 
     @Test
     void testUnassignSupir_Returns404WhenNotFound() {
-        when(kebunService.unassignSupir("KB999", "SUP001", null)).thenReturn(null);
+        UUID supirId = UUID.randomUUID();
+        when(kebunService.unassignSupir("KB999", supirId, null)).thenReturn(null);
 
-        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB999", "SUP001", null);
+        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB999", supirId, null);
 
         assertNotNull(result);
         assertEquals(404, result.getStatusCode());

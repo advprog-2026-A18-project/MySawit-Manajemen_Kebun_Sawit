@@ -16,5 +16,7 @@ public interface KebunRepository extends JpaRepository<Kebun, String> {
 
     Optional<Kebun> findByMandorId(String mandorId);
 
+    List<Kebun> findAllByOrderByKodeKebunAsc();
+
     List<Kebun> findAllByOrderByCreatedAtDesc();
 }

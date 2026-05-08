@@ -4,8 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,36 +38,55 @@ class KebunTest {
     }
 
     @Test
-    void testSupirIds_Initialization() {
-        assertNotNull(kebun.getSupirIds());
-        assertTrue(kebun.getSupirIds().isEmpty());
+    void testSupirList_Initialization() {
+        assertNotNull(kebun.getSupirList());
+        assertTrue(kebun.getSupirList().isEmpty());
     }
 
     @Test
-    void testSetSupirIds() {
-        List<String> supirIds = new ArrayList<>();
-        supirIds.add("SUP001");
-        supirIds.add("SUP002");
+    void testAddSupir() {
+        UUID supirId = UUID.randomUUID();
+        String supirNama = "Supir A";
 
-        kebun.setSupirIds(supirIds);
+        kebun.addSupir(supirId, supirNama);
 
-        assertEquals(2, kebun.getSupirIds().size());
-        assertTrue(kebun.getSupirIds().contains("SUP001"));
-        assertTrue(kebun.getSupirIds().contains("SUP002"));
+        assertEquals(1, kebun.getSupirIds().size());
+        assertEquals(supirId, kebun.getSupirIds().get(0));
+        assertEquals(supirNama, kebun.getSupirNamas().get(0));
+    }
+
+    @Test
+    void testRemoveSupir() {
+        UUID supirId = UUID.randomUUID();
+        String supirNama = "Supir A";
+
+        kebun.addSupir(supirId, supirNama);
+        assertEquals(1, kebun.getSupirIds().size());
+
+        kebun.removeSupir(supirId);
+        assertEquals(0, kebun.getSupirIds().size());
     }
 
     @Test
     void testSetterGetter() {
+        UUID mandorId = UUID.randomUUID();
+        String mandorNama = "Pak Mandor";
+        UUID supirId = UUID.randomUUID();
+
         kebun.setKodeKebun("KB001");
         kebun.setNamaKebun("Kebun Makmur");
         kebun.setLuasHektare(500);
         kebun.setKoordinat("{}");
-        kebun.setMandorId("M001");
+        kebun.setMandorId(mandorId);
+        kebun.setMandorNama(mandorNama);
+        kebun.addSupir(supirId, "Supir A");
 
         assertEquals("KB001", kebun.getKodeKebun());
         assertEquals("Kebun Makmur", kebun.getNamaKebun());
         assertEquals(500, kebun.getLuasHektare());
         assertEquals("{}", kebun.getKoordinat());
-        assertEquals("M001", kebun.getMandorId());
+        assertEquals(mandorId, kebun.getMandorId());
+        assertEquals(mandorNama, kebun.getMandorNama());
+        assertEquals(1, kebun.getSupirIds().size());
     }
 }

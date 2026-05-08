@@ -3,7 +3,9 @@ package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.Kebun;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.KebunSupir;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunRepository;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunSupirRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,6 +25,9 @@ class KebunServiceImplTest {
 
     @Mock
     private KebunRepository kebunRepository;
+
+    @Mock
+    private KebunSupirRepository kebunSupirRepository;
 
     @InjectMocks
     private KebunServiceImpl kebunService;
@@ -46,8 +52,11 @@ class KebunServiceImplTest {
         kebun2.setKoordinat("{}");
 
         when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList(kebun1, kebun2));
+        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList(kebun1, kebun2));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+        when(kebunSupirRepository.findByKodeKebun("KB002")).thenReturn(new ArrayList<>());
 
-        List<KebunResponse> result = kebunService.getAllKebun(null, null);
+        List<KebunResponse> result = kebunService.getAllKebun(null, null, null);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -64,8 +73,9 @@ class KebunServiceImplTest {
         kebun.setKoordinat("{}");
 
         when(kebunRepository.findByNamaKebunContainingIgnoreCase("Makmur")).thenReturn(Arrays.asList(kebun));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
-        List<KebunResponse> result = kebunService.getAllKebun("Makmur", null);
+        List<KebunResponse> result = kebunService.getAllKebun("Makmur", null, null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -82,8 +92,9 @@ class KebunServiceImplTest {
         kebun.setKoordinat("{}");
 
         when(kebunRepository.findByKodeKebunContainingIgnoreCase("KB")).thenReturn(Arrays.asList(kebun));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
-        List<KebunResponse> result = kebunService.getAllKebun(null, "KB");
+        List<KebunResponse> result = kebunService.getAllKebun(null, "KB", null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -95,7 +106,7 @@ class KebunServiceImplTest {
     void testGetAllKebun_EmptyResult_ReturnsEmptyList() {
         when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
 
-        List<KebunResponse> result = kebunService.getAllKebun(null, null);
+        List<KebunResponse> result = kebunService.getAllKebun(null, null, null);
 
         assertNotNull(result);
         assertEquals(0, result.size());
@@ -111,7 +122,7 @@ class KebunServiceImplTest {
 
         when(kebunRepository.findByNamaKebunContainingIgnoreCase("Makmur")).thenReturn(Arrays.asList(kebun));
 
-        List<KebunResponse> result = kebunService.getAllKebun("Makmur", "KB001");
+        List<KebunResponse> result = kebunService.getAllKebun("Makmur", "KB001", null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -121,14 +132,16 @@ class KebunServiceImplTest {
 
     @Test
     void testGetKebunById_Found() {
+        UUID mandorId = UUID.randomUUID();
         Kebun kebun = new Kebun();
         kebun.setKodeKebun("KB001");
         kebun.setNamaKebun("Kebun Makmur");
         kebun.setLuasHektare(500);
         kebun.setKoordinat("{}");
-        kebun.setMandorId("M001");
+        kebun.setMandorId(mandorId);
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
         KebunResponse result = kebunService.getKebunById("KB001", null);
 
@@ -136,7 +149,7 @@ class KebunServiceImplTest {
         assertEquals("KB001", result.getKodeKebun());
         assertEquals("Kebun Makmur", result.getNamaKebun());
         assertEquals(500, result.getLuasHektare());
-        assertEquals("M001", result.getMandorId());
+        assertEquals(mandorId, result.getMandorId());
     }
 
     @Test
@@ -152,7 +165,7 @@ class KebunServiceImplTest {
     void testGetAllKebun_WithBlankSearch_UsesDefault() {
         when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
 
-        List<KebunResponse> result = kebunService.getAllKebun("   ", "   ");
+        List<KebunResponse> result = kebunService.getAllKebun("   ", "   ", null);
 
         assertNotNull(result);
         verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
@@ -162,9 +175,31 @@ class KebunServiceImplTest {
     void testGetAllKebun_WithEmptyString_UsesDefault() {
         when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
 
-        List<KebunResponse> result = kebunService.getAllKebun("", "");
+        List<KebunResponse> result = kebunService.getAllKebun("", "", null);
 
         assertNotNull(result);
+        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
+    }
+
+    @Test
+    void testGetAllKebun_DefaultSortByKodeKebun() {
+        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList(kebun1, kebun2));
+
+        List<KebunResponse> result = kebunService.getAllKebun(null, null, null);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(kebunRepository, times(1)).findAllByOrderByKodeKebunAsc();
+    }
+
+    @Test
+    void testGetAllKebun_SortByCreatedAt() {
+        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList(kebun1, kebun2));
+
+        List<KebunResponse> result = kebunService.getAllKebun(null, null, "createdAt");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
         verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
     }
 
@@ -182,6 +217,7 @@ class KebunServiceImplTest {
 
         when(kebunRepository.findAll()).thenReturn(List.of());
         when(kebunRepository.save(any(Kebun.class))).thenReturn(savedKebun);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
         KebunResponse result = kebunService.createKebun(request);
 
@@ -218,6 +254,7 @@ class KebunServiceImplTest {
         savedKebun.setNamaKebun("Kebun Makmur");
 
         when(kebunRepository.save(any(Kebun.class))).thenReturn(savedKebun);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
         KebunResponse result = kebunService.createKebun(request);
 
@@ -236,6 +273,7 @@ class KebunServiceImplTest {
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(existingKebun));
         when(kebunRepository.save(any(Kebun.class))).thenReturn(existingKebun);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
         KebunResponse result = kebunService.updateKebun("KB001", request);
 
@@ -267,6 +305,7 @@ class KebunServiceImplTest {
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(existingKebun));
         when(kebunRepository.save(any(Kebun.class))).thenReturn(existingKebun);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
         KebunResponse result = kebunService.updateKebun("KB001", request);
 
@@ -284,14 +323,16 @@ class KebunServiceImplTest {
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(existingKebun));
 
         assertDoesNotThrow(() -> kebunService.deleteKebun("KB001"));
+        verify(kebunSupirRepository, times(1)).deleteByKodeKebun("KB001");
         verify(kebunRepository, times(1)).deleteById("KB001");
     }
 
     @Test
     void testDeleteKebun_FailsWithMandor() {
+        UUID mandorId = UUID.randomUUID();
         Kebun existingKebun = new Kebun();
         existingKebun.setKodeKebun("KB001");
-        existingKebun.setMandorId("M001");
+        existingKebun.setMandorId(mandorId);
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(existingKebun));
 
@@ -312,6 +353,7 @@ class KebunServiceImplTest {
 
     @Test
     void testAssignMandor_Success() {
+        UUID mandorId = UUID.randomUUID();
         Kebun kebun = new Kebun();
         kebun.setKodeKebun("KB001");
         kebun.setNamaKebun("Kebun Makmur");
@@ -319,41 +361,23 @@ class KebunServiceImplTest {
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
         when(kebunRepository.save(any(Kebun.class))).thenReturn(kebun);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
-        KebunResponse result = kebunService.assignMandor("KB001", "M001");
+        KebunResponse result = kebunService.assignMandor("KB001", mandorId, "Pak Mandor");
 
         assertNotNull(result);
-        assertEquals("M001", result.getMandorId());
+        assertEquals(mandorId, result.getMandorId());
         verify(kebunRepository, times(1)).save(kebun);
     }
 
     @Test
     void testAssignMandor_NotFound() {
+        UUID mandorId = UUID.randomUUID();
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
 
-        KebunResponse result = kebunService.assignMandor("KB999", "M001");
+        KebunResponse result = kebunService.assignMandor("KB999", mandorId, "Pak Mandor");
 
         assertNull(result);
-    }
-
-    @Test
-    void testUnassignMandor_WithReassign() {
-        Kebun currentKebun = new Kebun();
-        currentKebun.setKodeKebun("KB001");
-        currentKebun.setMandorId("M001");
-
-        Kebun targetKebun = new Kebun();
-        targetKebun.setKodeKebun("KB002");
-        targetKebun.setMandorId(null);
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-        when(kebunRepository.findById("KB002")).thenReturn(Optional.of(targetKebun));
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(currentKebun);
-
-        KebunResponse result = kebunService.unassignMandor("KB001", "KB002");
-
-        assertNotNull(result);
-        assertNull(result.getMandorId());
     }
 
     @Test
@@ -363,6 +387,7 @@ class KebunServiceImplTest {
         kebun.setMandorId(null);
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
 
         KebunResponse result = kebunService.unassignMandor("KB001", null);
 
@@ -374,66 +399,40 @@ class KebunServiceImplTest {
 
     @Test
     void testAssignSupir_Success() {
-        Kebun kebun = new Kebun();
-        kebun.setKodeKebun("KB001");
-        kebun.setSupirIds(new ArrayList<>());
+        UUID supirId = UUID.randomUUID();
+        String namaSupir = "Supir A";
 
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(kebun);
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(new Kebun()));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+        when(kebunSupirRepository.save(any(KebunSupir.class))).thenReturn(new KebunSupir());
 
-        KebunResponse result = kebunService.assignSupir("KB001", "SUP001");
+        KebunResponse result = kebunService.assignSupir("KB001", supirId, namaSupir);
 
         assertNotNull(result);
-        assertEquals(1, result.getSupirIds().size());
-        assertTrue(result.getSupirIds().contains("SUP001"));
+        verify(kebunSupirRepository, times(1)).save(any(KebunSupir.class));
     }
 
     @Test
     void testAssignSupir_AlreadyAssigned() {
-        List<String> supirIds = new ArrayList<>();
-        supirIds.add("SUP001");
+        UUID supirId = UUID.randomUUID();
+        KebunSupir existingSupir = new KebunSupir();
+        existingSupir.setSupirId(supirId);
 
-        Kebun kebun = new Kebun();
-        kebun.setKodeKebun("KB001");
-        kebun.setSupirIds(supirIds);
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(new Kebun()));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(List.of(existingSupir));
 
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
-
-        KebunResponse result = kebunService.assignSupir("KB001", "SUP001");
+        KebunResponse result = kebunService.assignSupir("KB001", supirId, "Supir A");
 
         assertNotNull(result);
-        assertEquals(1, result.getSupirIds().size());
-        verify(kebunRepository, never()).save(any());
-    }
-
-    @Test
-    void testUnassignSupir_WithReassign() {
-        List<String> supirIds = new ArrayList<>();
-        supirIds.add("SUP001");
-
-        Kebun currentKebun = new Kebun();
-        currentKebun.setKodeKebun("KB001");
-        currentKebun.setSupirIds(supirIds);
-
-        Kebun targetKebun = new Kebun();
-        targetKebun.setKodeKebun("KB002");
-        targetKebun.setSupirIds(new ArrayList<>());
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-        when(kebunRepository.findById("KB002")).thenReturn(Optional.of(targetKebun));
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(currentKebun);
-
-        KebunResponse result = kebunService.unassignSupir("KB001", "SUP001", "KB002");
-
-        assertNotNull(result);
-        assertFalse(result.getSupirIds().contains("SUP001"));
+        verify(kebunSupirRepository, never()).save(any());
     }
 
     @Test
     void testUnassignSupir_NotFound() {
+        UUID supirId = UUID.randomUUID();
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
 
-        KebunResponse result = kebunService.unassignSupir("KB999", "SUP001", null);
+        KebunResponse result = kebunService.unassignSupir("KB999", supirId, null);
 
         assertNull(result);
     }
@@ -441,165 +440,79 @@ class KebunServiceImplTest {
     // ===== Additional tests for coverage =====
 
     @Test
-    void testGetKebunById_WithSupirFilter() {
-        List<String> supirIds = new ArrayList<>();
-        supirIds.add("SUP001");
-        supirIds.add("SUP002");
+    void testGetKebunById_WithSupir() {
+        UUID supirId = UUID.randomUUID();
+        String namaSupir = "Supir A";
+        KebunSupir supir = new KebunSupir();
+        supir.setSupirId(supirId);
+        supir.setNamaSupir(namaSupir);
 
         Kebun kebun = new Kebun();
         kebun.setKodeKebun("KB001");
         kebun.setNamaKebun("Kebun Makmur");
-        kebun.setSupirIds(supirIds);
+        List<KebunSupir> supirList = new ArrayList<>();
+        supirList.add(supir);
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(supirList);
 
-        KebunResponse result = kebunService.getKebunById("KB001", "SUP");
+        KebunResponse result = kebunService.getKebunById("KB001", null);
 
         assertNotNull(result);
-        assertEquals(2, result.getSupirIds().size());
+        assertEquals(1, result.getSupirIds().size());
+        assertEquals(supirId, result.getSupirIds().get(0));
+        assertEquals(namaSupir, result.getListSupir().get(0));
     }
 
     @Test
-    void testGetKebunById_WithSupirFilter_NoMatch() {
-        List<String> supirIds = new ArrayList<>();
-        supirIds.add("SUP001");
+    void testUnassignSupir_WithReassign() {
+        UUID supirId = UUID.randomUUID();
+        String targetKebunKode = "KB002";
+        String namaSupir = "Supir A";
 
-        Kebun kebun = new Kebun();
-        kebun.setKodeKebun("KB001");
-        kebun.setNamaKebun("Kebun Makmur");
-        kebun.setSupirIds(supirIds);
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
-
-        KebunResponse result = kebunService.getKebunById("KB001", "XYZ");
-
-        assertNotNull(result);
-        assertEquals(0, result.getSupirIds().size());
-    }
-
-    @Test
-    void testUpdateKebun_WithKoordinat() {
-        Kebun existingKebun = new Kebun();
-        existingKebun.setKodeKebun("KB001");
-        existingKebun.setNamaKebun("Kebun Lama");
-        existingKebun.setLuasHektare(500);
-        existingKebun.setKoordinat("{}");
-
-        KebunRequest request = new KebunRequest(null, null, null, "[{\"lat\":0,\"lng\":0},{\"lat\":100,\"lng\":0},{\"lat\":100,\"lng\":100},{\"lat\":0,\"lng\":100}]");
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(existingKebun));
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(existingKebun);
-
-        KebunResponse result = kebunService.updateKebun("KB001", request);
-
-        assertNotNull(result);
-    }
-
-    @Test
-    void testUnassignMandor_TargetKebunNotFound() {
-        Kebun currentKebun = new Kebun();
-        currentKebun.setKodeKebun("KB001");
-        currentKebun.setMandorId("M001");
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-        when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(currentKebun);
-
-        KebunResponse result = kebunService.unassignMandor("KB001", "KB999");
-
-        assertNotNull(result);
-        assertNull(result.getMandorId());
-    }
-
-    @Test
-    void testUnassignMandor_BlankTargetKode() {
-        Kebun currentKebun = newKebun("KB001", "M001");
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(currentKebun);
-
-        KebunResponse result = kebunService.unassignMandor("KB001", "   ");
-
-        assertNotNull(result);
-        assertNull(result.getMandorId());
-    }
-
-    @Test
-    void testAssignSupir_NullSupirIdsList() {
-        Kebun kebun = new Kebun();
-        kebun.setKodeKebun("KB001");
-        kebun.setSupirIds(null);
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(kebun);
-
-        KebunResponse result = kebunService.assignSupir("KB001", "SUP001");
-
-        assertNotNull(result);
-    }
-
-    @Test
-    void testUnassignSupir_NullSupirIds() {
-        Kebun currentKebun = new Kebun();
-        currentKebun.setKodeKebun("KB001");
-        currentKebun.setSupirIds(null);
-
-        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-
-        KebunResponse result = kebunService.unassignSupir("KB001", "SUP001", null);
-
-        assertNotNull(result);
-    }
-
-    @Test
-    void testUnassignSupir_TargetNotFound() {
-        List<String> supirIds = new ArrayList<>();
-        supirIds.add("SUP001");
+        KebunSupir existingSupir = new KebunSupir();
+        existingSupir.setKodeKebun("KB001");
+        existingSupir.setSupirId(supirId);
+        existingSupir.setNamaSupir(namaSupir);
 
         Kebun currentKebun = new Kebun();
         currentKebun.setKodeKebun("KB001");
-        currentKebun.setSupirIds(supirIds);
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-        when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(currentKebun);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(List.of(existingSupir));
+        when(kebunSupirRepository.findByKodeKebun(targetKebunKode)).thenReturn(new ArrayList<>());
+        when(kebunSupirRepository.save(any(KebunSupir.class))).thenReturn(new KebunSupir());
 
-        KebunResponse result = kebunService.unassignSupir("KB001", "SUP001", "KB999");
+        KebunResponse result = kebunService.unassignSupir("KB001", supirId, targetKebunKode);
 
         assertNotNull(result);
-        assertFalse(result.getSupirIds().contains("SUP001"));
+        verify(kebunSupirRepository, times(1)).delete(any(KebunSupir.class));
+        verify(kebunSupirRepository, times(1)).save(any(KebunSupir.class));
     }
 
     @Test
-    void testUnassignSupir_ReassignToTargetWithExistingSupir() {
-        List<String> currentSupirIds = new ArrayList<>();
-        currentSupirIds.add("SUP001");
+    void testUnassignMandor_WithReassign() {
+        UUID mandorId = UUID.randomUUID();
+        String targetKebunKode = "KB002";
 
         Kebun currentKebun = new Kebun();
         currentKebun.setKodeKebun("KB001");
-        currentKebun.setSupirIds(currentSupirIds);
-
-        List<String> targetSupirIds = new ArrayList<>();
-        targetSupirIds.add("SUP002");
+        currentKebun.setMandorId(mandorId);
+        currentKebun.setMandorNama("Pak Mandor");
 
         Kebun targetKebun = new Kebun();
-        targetKebun.setKodeKebun("KB002");
-        targetKebun.setSupirIds(targetSupirIds);
+        targetKebun.setKodeKebun(targetKebunKode);
+        targetKebun.setMandorId(null);
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-        when(kebunRepository.findById("KB002")).thenReturn(Optional.of(targetKebun));
+        when(kebunRepository.findById(targetKebunKode)).thenReturn(Optional.of(targetKebun));
         when(kebunRepository.save(any(Kebun.class))).thenReturn(currentKebun);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+        when(kebunSupirRepository.findByKodeKebun(targetKebunKode)).thenReturn(new ArrayList<>());
 
-        KebunResponse result = kebunService.unassignSupir("KB001", "SUP001", "KB002");
+        KebunResponse result = kebunService.unassignMandor("KB001", targetKebunKode);
 
         assertNotNull(result);
-        assertFalse(result.getSupirIds().contains("SUP001"));
-    }
-
-    private Kebun newKebun(String kode, String mandorId) {
-        Kebun kebun = new Kebun();
-        kebun.setKodeKebun(kode);
-        kebun.setMandorId(mandorId);
-        return kebun;
+        assertNull(result.getMandorId());
     }
 }
