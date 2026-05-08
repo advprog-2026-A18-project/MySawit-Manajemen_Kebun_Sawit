@@ -54,6 +54,11 @@ configurations {
     }
 }
 
+// Enable dependency locking for all configurations
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 repositories {
     mavenCentral()
 }

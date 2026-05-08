@@ -6,22 +6,22 @@ import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.Kebun;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.KebunSupir;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunRepository;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunSupirRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class KebunServiceImpl implements KebunService {
 
-    @Autowired
-    private KebunRepository kebunRepository;
+    private final KebunRepository kebunRepository;
+    private final KebunSupirRepository kebunSupirRepository;
 
-    @Autowired
-    private KebunSupirRepository kebunSupirRepository;
+    public KebunServiceImpl(KebunRepository kebunRepository, KebunSupirRepository kebunSupirRepository) {
+        this.kebunRepository = kebunRepository;
+        this.kebunSupirRepository = kebunSupirRepository;
+    }
 
     @Override
     public List<KebunResponse> getAllKebun(String searchNama, String searchKode, String sortBy) {
@@ -41,7 +41,7 @@ public class KebunServiceImpl implements KebunService {
 
         return kebunList.stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -265,17 +265,13 @@ public class KebunServiceImpl implements KebunService {
     }
 
     private KebunResponse toResponse(Kebun kebun, String searchSupirNama) {
-        List<KebunSupir> supirList = kebunSupirRepository.findByKodeKebun(kebun.getKodeKebun());
+        List<KebunSupir> supirList = kebunSupirRepository.findByKodeKebun(kebun.getKodeKebun()).stream()
+                .filter(s -> searchSupirNama == null || searchSupirNama.isBlank() ||
+                        (s.getNamaSupir() != null && s.getNamaSupir().toLowerCase().contains(searchSupirNama.toLowerCase())))
+                .toList();
 
-        if (searchSupirNama != null && !searchSupirNama.isBlank()) {
-            supirList = supirList.stream()
-                    .filter(s -> s.getNamaSupir() != null &&
-                            s.getNamaSupir().toLowerCase().contains(searchSupirNama.toLowerCase()))
-                    .collect(Collectors.toList());
-        }
-
-        List<UUID> supirIds = supirList.stream().map(KebunSupir::getSupirId).collect(Collectors.toList());
-        List<String> namaSupirs = supirList.stream().map(KebunSupir::getNamaSupir).collect(Collectors.toList());
+        List<UUID> supirIds = supirList.stream().map(KebunSupir::getSupirId).toList();
+        List<String> namaSupirs = supirList.stream().map(KebunSupir::getNamaSupir).toList();
 
         return new KebunResponse(
                 kebun.getKodeKebun(),

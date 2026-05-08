@@ -635,7 +635,6 @@ class KebunServiceImplTest {
     @Test
     void testGetKebunById_WithSearchSupirNama() {
         UUID supirId = UUID.randomUUID();
-        String namaSupir = "Supir A";
 
         KebunSupir supir = new KebunSupir();
         supir.setSupirId(supirId);
