@@ -61,7 +61,7 @@ class KebunServiceImplTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("KB001", result.get(0).getKodeKebun());
-        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
+        verify(kebunRepository, times(1)).findAllByOrderByKodeKebunAsc();
     }
 
     @Test
@@ -163,27 +163,41 @@ class KebunServiceImplTest {
 
     @Test
     void testGetAllKebun_WithBlankSearch_UsesDefault() {
-        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
+        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList());
 
         List<KebunResponse> result = kebunService.getAllKebun("   ", "   ", null);
 
         assertNotNull(result);
-        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
+        verify(kebunRepository, times(1)).findAllByOrderByKodeKebunAsc();
     }
 
     @Test
     void testGetAllKebun_WithEmptyString_UsesDefault() {
-        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
+        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList());
 
         List<KebunResponse> result = kebunService.getAllKebun("", "", null);
 
         assertNotNull(result);
-        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
+        verify(kebunRepository, times(1)).findAllByOrderByKodeKebunAsc();
     }
 
     @Test
     void testGetAllKebun_DefaultSortByKodeKebun() {
-        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList(kebun1, kebun2));
+        Kebun sort1 = new Kebun();
+        sort1.setKodeKebun("KB001");
+        sort1.setNamaKebun("Kebun Makmur");
+        sort1.setLuasHektare(500);
+        sort1.setKoordinat("{}");
+
+        Kebun sort2 = new Kebun();
+        sort2.setKodeKebun("KB002");
+        sort2.setNamaKebun("Kebun Sejahtera");
+        sort2.setLuasHektare(750);
+        sort2.setKoordinat("{}");
+
+        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList(sort1, sort2));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+        when(kebunSupirRepository.findByKodeKebun("KB002")).thenReturn(new ArrayList<>());
 
         List<KebunResponse> result = kebunService.getAllKebun(null, null, null);
 
@@ -194,7 +208,21 @@ class KebunServiceImplTest {
 
     @Test
     void testGetAllKebun_SortByCreatedAt() {
-        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList(kebun1, kebun2));
+        Kebun sort1 = new Kebun();
+        sort1.setKodeKebun("KB001");
+        sort1.setNamaKebun("Kebun Makmur");
+        sort1.setLuasHektare(500);
+        sort1.setKoordinat("{}");
+
+        Kebun sort2 = new Kebun();
+        sort2.setKodeKebun("KB002");
+        sort2.setNamaKebun("Kebun Sejahtera");
+        sort2.setLuasHektare(750);
+        sort2.setKoordinat("{}");
+
+        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList(sort1, sort2));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+        when(kebunSupirRepository.findByKodeKebun("KB002")).thenReturn(new ArrayList<>());
 
         List<KebunResponse> result = kebunService.getAllKebun(null, null, "createdAt");
 
