@@ -163,22 +163,22 @@ class KebunServiceImplTest {
 
     @Test
     void testGetAllKebun_WithBlankSearch_UsesDefault() {
-        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
+        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList());
 
         List<KebunResponse> result = kebunService.getAllKebun("   ", "   ", null);
 
         assertNotNull(result);
-        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
+        verify(kebunRepository, times(1)).findAllByOrderByKodeKebunAsc();
     }
 
     @Test
     void testGetAllKebun_WithEmptyString_UsesDefault() {
-        when(kebunRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Arrays.asList());
+        when(kebunRepository.findAllByOrderByKodeKebunAsc()).thenReturn(Arrays.asList());
 
         List<KebunResponse> result = kebunService.getAllKebun("", "", null);
 
         assertNotNull(result);
-        verify(kebunRepository, times(1)).findAllByOrderByCreatedAtDesc();
+        verify(kebunRepository, times(1)).findAllByOrderByKodeKebunAsc();
     }
 
     @Test
