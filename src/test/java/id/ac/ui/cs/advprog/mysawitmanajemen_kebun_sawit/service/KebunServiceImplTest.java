@@ -147,7 +147,8 @@ class KebunServiceImplTest {
 
     @Test
     void testCreateKebun_Success() {
-        KebunRequest request = new KebunRequest("KB001", "Kebun Makmur", 500, "{}");
+        String validCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":100,\"lng\":100},{\"lat\":100,\"lng\":0}]";
+        KebunRequest request = new KebunRequest("KB001", "Kebun Makmur", 500, validCoord);
         Kebun savedKebun = new Kebun();
         savedKebun.setKodeKebun("KB001");
         savedKebun.setNamaKebun("Kebun Makmur");
@@ -162,13 +163,27 @@ class KebunServiceImplTest {
     }
 
     @Test
+    void testCreateKebun_InvalidKoordinat_Not4Points_Fails() {
+        KebunRequest request = new KebunRequest("KB001", "Kebun", 500,
+                "[{\"lat\":0,\"lng\":0},{\"lat\":100,\"lng\":100}]");
+        assertThrows(IllegalArgumentException.class, () -> kebunService.createKebun(request));
+    }
+
+    @Test
+    void testCreateKebun_InvalidKoordinat_NotRectangle_Fails() {
+        KebunRequest request = new KebunRequest("KB001", "Kebun", 500,
+                "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":50,\"lng\":150},{\"lat\":100,\"lng\":0}]");
+        assertThrows(IllegalArgumentException.class, () -> kebunService.createKebun(request));
+    }
+
+    @Test
     void testCreateKebun_Overlapping_Fails() {
-        KebunRequest request = new KebunRequest("KB002", "Kebun Overlap", 500,
-                "[{\"lat\":150,\"lng\":150},{\"lat\":250,\"lng\":150},{\"lat\":250,\"lng\":250},{\"lat\":150,\"lng\":250}]");
+        String newCoord = "[{\"lat\":50,\"lng\":50},{\"lat\":50,\"lng\":150},{\"lat\":150,\"lng\":150},{\"lat\":150,\"lng\":50}]";
+        KebunRequest request = new KebunRequest("KB002", "Kebun Overlap", 500, newCoord);
         Kebun existing = new Kebun();
         existing.setKodeKebun("KB001");
         existing.setNamaKebun("Kebun Nusantara");
-        existing.setKoordinat("[{\"lat\":0,\"lng\":0},{\"lat\":400,\"lng\":0},{\"lat\":400,\"lng\":300},{\"lat\":0,\"lng\":300}]");
+        existing.setKoordinat("[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":200},{\"lat\":200,\"lng\":200},{\"lat\":200,\"lng\":0}]");
 
         when(kebunRepository.findAll()).thenReturn(List.of(existing));
 
@@ -446,7 +461,8 @@ class KebunServiceImplTest {
 
     @Test
     void testCreateKebun_WithNullCoordInExisting() {
-        KebunRequest request = new KebunRequest("KB002", "Kebun", 500, "[{\"lat\":100,\"lng\":100}]");
+        String validCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":100,\"lng\":100},{\"lat\":100,\"lng\":0}]";
+        KebunRequest request = new KebunRequest("KB002", "Kebun", 500, validCoord);
         Kebun existing = new Kebun();
         existing.setKodeKebun("KB001");
         existing.setKoordinat(null);
