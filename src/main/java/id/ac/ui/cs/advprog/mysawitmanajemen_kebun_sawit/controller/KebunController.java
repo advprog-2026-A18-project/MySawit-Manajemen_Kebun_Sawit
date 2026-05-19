@@ -84,7 +84,7 @@ public class KebunController {
     @DeleteMapping("/{kode}/mandor")
     public GenericResponse<KebunResponse> unassignMandor(
             @PathVariable String kode,
-            @RequestParam(required = false) String target) {
+            @RequestParam String target) {
         KebunResponse updated = kebunService.unassignMandor(kode, target);
         if (updated == null) {
             return GenericResponse.error(404, KEBUN_NOT_FOUND);
@@ -107,7 +107,7 @@ public class KebunController {
     public GenericResponse<KebunResponse> unassignSupir(
             @PathVariable String kode,
             @PathVariable UUID supirId,
-            @RequestParam(required = false) String target) {
+            @RequestParam String target) {
         KebunResponse updated = kebunService.unassignSupir(kode, supirId, target);
         if (updated == null) {
             return GenericResponse.error(404, KEBUN_NOT_FOUND);

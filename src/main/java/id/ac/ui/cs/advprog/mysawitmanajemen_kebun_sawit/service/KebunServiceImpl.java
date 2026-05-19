@@ -175,6 +175,11 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public KebunResponse unassignMandor(String kodeKebun, String targetKebunKode) {
+        if (targetKebunKode == null || targetKebunKode.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Target kebun is required when unassigning mandor (mandatory reassignment)");
+        }
+
         Optional<Kebun> optionalCurrentKebun = kebunRepository.findById(kodeKebun);
         if (optionalCurrentKebun.isEmpty()) {
             return null;
@@ -188,19 +193,19 @@ public class KebunServiceImpl implements KebunService {
             return toResponse(currentKebun);
         }
 
+        Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
+        if (optionalTargetKebun.isEmpty()) {
+            throw new IllegalArgumentException("Target kebun '" + targetKebunKode + "' not found");
+        }
+
         currentKebun.setMandorId(null);
         currentKebun.setMandorNama(null);
         kebunRepository.save(currentKebun);
 
-        if (targetKebunKode != null) {
-            Optional<Kebun> optionalTargetKebun = kebunRepository.findById(targetKebunKode);
-            if (optionalTargetKebun.isPresent()) {
-                Kebun targetKebun = optionalTargetKebun.get();
-                targetKebun.setMandorId(currentMandorId);
-                targetKebun.setMandorNama(currentMandorNama);
-                kebunRepository.save(targetKebun);
-            }
-        }
+        Kebun targetKebun = optionalTargetKebun.get();
+        targetKebun.setMandorId(currentMandorId);
+        targetKebun.setMandorNama(currentMandorNama);
+        kebunRepository.save(targetKebun);
 
         return toResponse(currentKebun);
     }
@@ -232,6 +237,11 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public KebunResponse unassignSupir(String kodeKebun, UUID supirId, String targetKebunKode) {
+        if (targetKebunKode == null || targetKebunKode.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Target kebun is required when unassigning supir (mandatory reassignment)");
+        }
+
         Optional<Kebun> optionalCurrentKebun = kebunRepository.findById(kodeKebun);
         if (optionalCurrentKebun.isEmpty()) {
             return null;
@@ -247,18 +257,16 @@ public class KebunServiceImpl implements KebunService {
             kebunSupirRepository.delete(supirToRemove.get());
         }
 
-        // Add to target kebun
-        if (targetKebunKode != null) {
-            List<KebunSupir> targetSupirs = kebunSupirRepository.findByKodeKebun(targetKebunKode);
-            boolean alreadyAssigned = targetSupirs.stream()
-                    .anyMatch(s -> s.getSupirId().equals(supirId));
-            if (!alreadyAssigned) {
-                KebunSupir supirToAdd = new KebunSupir();
-                supirToAdd.setKodeKebun(targetKebunKode);
-                supirToAdd.setSupirId(supirId);
-                supirToAdd.setNamaSupir(namaSupir);
-                kebunSupirRepository.save(supirToAdd);
-            }
+        // Add to target kebun (mandatory reassignment)
+        List<KebunSupir> targetSupirs = kebunSupirRepository.findByKodeKebun(targetKebunKode);
+        boolean alreadyAssigned = targetSupirs.stream()
+                .anyMatch(s -> s.getSupirId().equals(supirId));
+        if (!alreadyAssigned) {
+            KebunSupir supirToAdd = new KebunSupir();
+            supirToAdd.setKodeKebun(targetKebunKode);
+            supirToAdd.setSupirId(supirId);
+            supirToAdd.setNamaSupir(namaSupir);
+            kebunSupirRepository.save(supirToAdd);
         }
 
         return toResponse(optionalCurrentKebun.get());

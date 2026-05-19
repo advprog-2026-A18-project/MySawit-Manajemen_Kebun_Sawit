@@ -190,9 +190,9 @@ class KebunControllerTest {
 
     @Test
     void testUnassignMandor_Returns404WhenNotFound() {
-        when(kebunService.unassignMandor("KB999", null)).thenReturn(null);
+        when(kebunService.unassignMandor("KB999", "KB002")).thenReturn(null);
 
-        GenericResponse<KebunResponse> result = kebunController.unassignMandor("KB999", null);
+        GenericResponse<KebunResponse> result = kebunController.unassignMandor("KB999", "KB002");
 
         assertNotNull(result);
         assertEquals(404, result.getStatusCode());
@@ -233,9 +233,9 @@ class KebunControllerTest {
     @Test
     void testUnassignSupir_Returns404WhenNotFound() {
         UUID supirId = UUID.randomUUID();
-        when(kebunService.unassignSupir("KB999", supirId, null)).thenReturn(null);
+        when(kebunService.unassignSupir("KB999", supirId, "KB002")).thenReturn(null);
 
-        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB999", supirId, null);
+        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB999", supirId, "KB002");
 
         assertNotNull(result);
         assertEquals(404, result.getStatusCode());
