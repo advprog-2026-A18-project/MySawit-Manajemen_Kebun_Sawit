@@ -6,7 +6,6 @@ import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.KebunService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +18,11 @@ public class KebunController {
 
     private static final String KEBUN_NOT_FOUND = "Kebun not found";
 
-    @Autowired
-    private KebunService kebunService;
+    private final KebunService kebunService;
+
+    public KebunController(KebunService kebunService) {
+        this.kebunService = kebunService;
+    }
 
     @GetMapping
     public GenericResponse<List<KebunResponse>> getAllKebun(
