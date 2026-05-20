@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.AssignSupirRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.exception.KebunNotFoundException;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.KebunService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -121,15 +122,12 @@ class KebunControllerTest {
     }
 
     @Test
-    void testGetKebunById_Returns404WhenNotFound() {
-        when(kebunService.getKebunById("KB999", null)).thenReturn(null);
+    void testGetKebunById_NotFound_ThrowsException() {
+        when(kebunService.getKebunById("KB999", null))
+                .thenThrow(new KebunNotFoundException("KB999"));
 
-        GenericResponse<KebunResponse> result = kebunController.getKebunById("KB999", null);
-
-        assertNotNull(result);
-        assertEquals(404, result.getStatusCode());
-        assertEquals("Kebun not found", result.getMessage());
-        verify(kebunService, times(1)).getKebunById("KB999", null);
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunController.getKebunById("KB999", null));
     }
 
     @Test
@@ -164,15 +162,14 @@ class KebunControllerTest {
     }
 
     @Test
-    void testAssignMandor_Returns404WhenNotFound() {
+    void testAssignMandor_NotFound_ThrowsException() {
         UUID mandorId = UUID.randomUUID();
-        when(kebunService.assignMandor("KB999", mandorId, "Pak Mandor")).thenReturn(null);
+        when(kebunService.assignMandor("KB999", mandorId, "Pak Mandor"))
+                .thenThrow(new KebunNotFoundException("KB999"));
 
         AssignMandorRequest request = new AssignMandorRequest(mandorId, "Pak Mandor", null);
-        GenericResponse<KebunResponse> result = kebunController.assignMandor("KB999", request);
-
-        assertNotNull(result);
-        assertEquals(404, result.getStatusCode());
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunController.assignMandor("KB999", request));
     }
 
     @Test
@@ -189,13 +186,12 @@ class KebunControllerTest {
     }
 
     @Test
-    void testUnassignMandor_Returns404WhenNotFound() {
-        when(kebunService.unassignMandor("KB999", null)).thenReturn(null);
+    void testUnassignMandor_NotFound_ThrowsException() {
+        when(kebunService.unassignMandor("KB999", "KB002"))
+                .thenThrow(new KebunNotFoundException("KB999"));
 
-        GenericResponse<KebunResponse> result = kebunController.unassignMandor("KB999", null);
-
-        assertNotNull(result);
-        assertEquals(404, result.getStatusCode());
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunController.unassignMandor("KB999", "KB002"));
     }
 
     // ===== Tests for Assign/Unassign Supir =====
@@ -231,48 +227,43 @@ class KebunControllerTest {
     }
 
     @Test
-    void testUnassignSupir_Returns404WhenNotFound() {
+    void testUnassignSupir_NotFound_ThrowsException() {
         UUID supirId = UUID.randomUUID();
-        when(kebunService.unassignSupir("KB999", supirId, null)).thenReturn(null);
+        when(kebunService.unassignSupir("KB999", supirId, "KB002"))
+                .thenThrow(new KebunNotFoundException("KB999"));
 
-        GenericResponse<KebunResponse> result = kebunController.unassignSupir("KB999", supirId, null);
-
-        assertNotNull(result);
-        assertEquals(404, result.getStatusCode());
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunController.unassignSupir("KB999", supirId, "KB002"));
     }
 
     @Test
-    void testUpdateKebun_Returns404WhenNotFound() {
+    void testUpdateKebun_NotFound_ThrowsException() {
         KebunRequest request = new KebunRequest(null, "Kebun Baru", 750, null);
-        when(kebunService.updateKebun("KB999", request)).thenReturn(null);
+        when(kebunService.updateKebun("KB999", request))
+                .thenThrow(new KebunNotFoundException("KB999"));
 
-        GenericResponse<KebunResponse> result = kebunController.updateKebun("KB999", request);
-
-        assertNotNull(result);
-        assertEquals(404, result.getStatusCode());
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunController.updateKebun("KB999", request));
     }
 
     @Test
-    void testAssignSupir_Returns404WhenNotFound() {
+    void testAssignSupir_NotFound_ThrowsException() {
         UUID supirId = UUID.randomUUID();
-        when(kebunService.assignSupir("KB999", supirId, "Supir A")).thenReturn(null);
+        when(kebunService.assignSupir("KB999", supirId, "Supir A"))
+                .thenThrow(new KebunNotFoundException("KB999"));
 
         AssignSupirRequest request = new AssignSupirRequest(supirId, "Supir A", null);
-        GenericResponse<KebunResponse> result = kebunController.assignSupir("KB999", request);
-
-        assertNotNull(result);
-        assertEquals(404, result.getStatusCode());
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunController.assignSupir("KB999", request));
     }
 
     @Test
-    void testDeleteKebun_Returns400WhenHasMandor() {
-        doThrow(new IllegalStateException("Cannot delete kebun with assigned mandor")).when(kebunService).deleteKebun("KB001");
+    void testDeleteKebun_WithMandor_ThrowsException() {
+        doThrow(new IllegalStateException("Cannot delete kebun with assigned mandor"))
+                .when(kebunService).deleteKebun("KB001");
 
-        GenericResponse<Void> result = kebunController.deleteKebun("KB001");
-
-        assertNotNull(result);
-        assertEquals(400, result.getStatusCode());
-        assertEquals("Cannot delete kebun with assigned mandor", result.getMessage());
+        assertThrows(IllegalStateException.class,
+                () -> kebunController.deleteKebun("KB001"));
     }
 
     @Test
