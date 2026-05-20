@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class GeoUtils {
 
     private static final Pattern COORD_PATTERN =
-            Pattern.compile("\"lat\":\\s*([\\d.\\-]+).*?\"lng\":\\s*([\\d.\\-]+)");
+            Pattern.compile("\"lat\":\\s*([\\d.\\-]+)[\\s,\"]*\"lng\":\\s*([\\d.\\-]+)");
 
     private GeoUtils() {
     }
