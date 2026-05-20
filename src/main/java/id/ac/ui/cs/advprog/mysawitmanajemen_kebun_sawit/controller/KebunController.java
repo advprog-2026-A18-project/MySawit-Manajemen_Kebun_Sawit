@@ -64,7 +64,7 @@ public class KebunController {
     public GenericResponse<KebunResponse> assignMandor(
             @PathVariable String kode,
             @RequestBody AssignMandorRequest request) {
-        KebunResponse updated = kebunService.assignMandor(kode, request.getMandorId(), request.getNamaMandor());
+        KebunResponse updated = kebunService.assignMandor(kode, request.getMandorId(), request.getMandorName());
         return GenericResponse.success("Successfully assigned mandor", updated);
     }
 
