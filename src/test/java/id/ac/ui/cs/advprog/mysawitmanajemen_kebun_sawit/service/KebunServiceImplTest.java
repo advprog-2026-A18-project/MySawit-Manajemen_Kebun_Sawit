@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service;
 
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
+import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.exception.KebunNotFoundException;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.Kebun;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.model.KebunSupir;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.repository.KebunRepository;
@@ -121,9 +122,9 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testGetKebunById_NotFound() {
+    void testGetKebunById_NotFound_ThrowsException() {
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        assertNull(kebunService.getKebunById("KB999", null));
+        assertThrows(KebunNotFoundException.class, () -> kebunService.getKebunById("KB999", null));
     }
 
     @Test
@@ -219,9 +220,10 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testUpdateKebun_NotFound() {
+    void testUpdateKebun_NotFound_ThrowsException() {
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        assertNull(kebunService.updateKebun("KB999", new KebunRequest(null, "X", 1, null)));
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunService.updateKebun("KB999", new KebunRequest(null, "X", 1, null)));
     }
 
     @Test
@@ -245,6 +247,12 @@ class KebunServiceImplTest {
         assertThrows(IllegalStateException.class, () -> kebunService.deleteKebun("KB001"));
     }
 
+    @Test
+    void testDeleteKebun_NotFound_ThrowsException() {
+        when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
+        assertThrows(KebunNotFoundException.class, () -> kebunService.deleteKebun("KB999"));
+    }
+
     // ===== Assign/Unassign Mandor =====
 
     @Test
@@ -263,9 +271,10 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testAssignMandor_NotFound() {
+    void testAssignMandor_NotFound_ThrowsException() {
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        assertNull(kebunService.assignMandor("KB999", UUID.randomUUID(), "Pak Mandor"));
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunService.assignMandor("KB999", UUID.randomUUID(), "Pak Mandor"));
     }
 
     @Test
@@ -336,9 +345,10 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testUnassignMandor_CurrentKebunNotFound() {
+    void testUnassignMandor_CurrentKebunNotFound_ThrowsException() {
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        assertNull(kebunService.unassignMandor("KB999", "KB002"));
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunService.unassignMandor("KB999", "KB002"));
     }
 
     // ===== Assign/Unassign Supir =====
@@ -374,9 +384,10 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testAssignSupir_NotFound() {
+    void testAssignSupir_NotFound_ThrowsException() {
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        assertNull(kebunService.assignSupir("KB999", UUID.randomUUID(), "Supir A"));
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunService.assignSupir("KB999", UUID.randomUUID(), "Supir A"));
     }
 
     @Test
@@ -437,9 +448,10 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testUnassignSupir_CurrentKebunNotFound() {
+    void testUnassignSupir_CurrentKebunNotFound_ThrowsException() {
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
-        assertNull(kebunService.unassignSupir("KB999", UUID.randomUUID(), "KB002"));
+        assertThrows(KebunNotFoundException.class,
+                () -> kebunService.unassignSupir("KB999", UUID.randomUUID(), "KB002"));
     }
 
     @Test

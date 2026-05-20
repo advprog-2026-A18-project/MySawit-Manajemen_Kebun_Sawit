@@ -6,23 +6,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Utility class for geographic/coordinate operations
- * related to Kebun boundaries.
- */
 public class GeoUtils {
 
     private static final Pattern COORD_PATTERN =
             Pattern.compile("\"lat\":\\s*([\\d.\\-]+).*?\"lng\":\\s*([\\d.\\-]+)");
 
     private GeoUtils() {
-        // Utility class
     }
 
-    /**
-     * Validates that the koordinat JSON contains exactly 4 points
-     * forming a rectangle (persegi/persegi panjang).
-     */
+
     public static void validateKoordinat(String koordinatJson) {
         if (koordinatJson == null || koordinatJson.isBlank()) {
             throw new IllegalArgumentException("Koordinat is required");
@@ -42,10 +34,6 @@ public class GeoUtils {
         }
     }
 
-    /**
-     * Checks whether two coordinate regions overlap using
-     * axis-aligned bounding box comparison.
-     */
     public static boolean isOverlapping(String coord1, String coord2) {
         if (coord1 == null || coord2 == null) {
             return false;
@@ -64,9 +52,6 @@ public class GeoUtils {
         return overlapLat && overlapLng;
     }
 
-    /**
-     * Parses coordinate points from a JSON string.
-     */
     public static List<double[]> parsePoints(String koordinatJson) {
         List<double[]> points = new ArrayList<>();
         Matcher matcher = COORD_PATTERN.matcher(koordinatJson);
@@ -80,10 +65,6 @@ public class GeoUtils {
         return points;
     }
 
-    /**
-     * Computes bounding box: [minLat, maxLat, minLng, maxLng].
-     * Returns null if no points found.
-     */
     static double[] computeBoundingBox(String koordinatJson) {
         List<double[]> points = parsePoints(koordinatJson);
         if (points.isEmpty()) {
@@ -105,10 +86,6 @@ public class GeoUtils {
         return new double[]{minLat, maxLat, minLng, maxLng};
     }
 
-    /**
-     * Checks if 4 points form a rectangle by verifying all
-     * distances from center are equal.
-     */
     private static boolean isRectangle(List<double[]> points) {
         double cx = points.stream().mapToDouble(p -> p[0]).average().orElse(0);
         double cy = points.stream().mapToDouble(p -> p[1]).average().orElse(0);
