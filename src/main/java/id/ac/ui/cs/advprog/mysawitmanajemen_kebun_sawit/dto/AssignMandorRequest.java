@@ -11,6 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AssignMandorRequest {
     private UUID mandorId;
-    private String namaMandor; // dari frontend
+    private String mandorName;
     private UUID targetKebunKode;
 }

@@ -6,7 +6,6 @@ import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.GenericResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunRequest;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.dto.KebunResponse;
 import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.KebunService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,10 +16,11 @@ import java.util.UUID;
 @RequestMapping("/api/kebun")
 public class KebunController {
 
-    private static final String KEBUN_NOT_FOUND = "Kebun not found";
+    private final KebunService kebunService;
 
-    @Autowired
-    private KebunService kebunService;
+    public KebunController(KebunService kebunService) {
+        this.kebunService = kebunService;
+    }
 
     @GetMapping
     public GenericResponse<List<KebunResponse>> getAllKebun(
@@ -37,9 +37,6 @@ public class KebunController {
             @PathVariable String kode,
             @RequestParam(required = false) String searchSupirNama) {
         KebunResponse kebun = kebunService.getKebunById(kode, searchSupirNama);
-        if (kebun == null) {
-            return GenericResponse.error(404, KEBUN_NOT_FOUND);
-        }
         return GenericResponse.success("Successfully retrieved kebun", kebun);
     }
 
@@ -54,41 +51,28 @@ public class KebunController {
             @PathVariable String kode,
             @RequestBody KebunRequest request) {
         KebunResponse updated = kebunService.updateKebun(kode, request);
-        if (updated == null) {
-            return GenericResponse.error(404, KEBUN_NOT_FOUND);
-        }
         return GenericResponse.success("Successfully updated kebun", updated);
     }
 
     @DeleteMapping("/{kode}")
     public GenericResponse<Void> deleteKebun(@PathVariable String kode) {
-        try {
-            kebunService.deleteKebun(kode);
-            return GenericResponse.success("Successfully deleted kebun", null);
-        } catch (IllegalStateException e) {
-            return GenericResponse.error(400, e.getMessage());
-        }
+        kebunService.deleteKebun(kode);
+        return GenericResponse.success("Successfully deleted kebun", null);
     }
 
     @PostMapping("/{kode}/mandor")
     public GenericResponse<KebunResponse> assignMandor(
             @PathVariable String kode,
             @RequestBody AssignMandorRequest request) {
-        KebunResponse updated = kebunService.assignMandor(kode, request.getMandorId(), request.getNamaMandor());
-        if (updated == null) {
-            return GenericResponse.error(404, KEBUN_NOT_FOUND);
-        }
+        KebunResponse updated = kebunService.assignMandor(kode, request.getMandorId(), request.getMandorName());
         return GenericResponse.success("Successfully assigned mandor", updated);
     }
 
     @DeleteMapping("/{kode}/mandor")
     public GenericResponse<KebunResponse> unassignMandor(
             @PathVariable String kode,
-            @RequestParam(required = false) String target) {
+            @RequestParam String target) {
         KebunResponse updated = kebunService.unassignMandor(kode, target);
-        if (updated == null) {
-            return GenericResponse.error(404, KEBUN_NOT_FOUND);
-        }
         return GenericResponse.success("Successfully unassigned mandor", updated);
     }
 
@@ -97,9 +81,6 @@ public class KebunController {
             @PathVariable String kode,
             @RequestBody AssignSupirRequest request) {
         KebunResponse updated = kebunService.assignSupir(kode, request.getSupirId(), request.getNamaSupir());
-        if (updated == null) {
-            return GenericResponse.error(404, KEBUN_NOT_FOUND);
-        }
         return GenericResponse.success("Successfully assigned supir", updated);
     }
 
@@ -107,11 +88,8 @@ public class KebunController {
     public GenericResponse<KebunResponse> unassignSupir(
             @PathVariable String kode,
             @PathVariable UUID supirId,
-            @RequestParam(required = false) String target) {
+            @RequestParam String target) {
         KebunResponse updated = kebunService.unassignSupir(kode, supirId, target);
-        if (updated == null) {
-            return GenericResponse.error(404, KEBUN_NOT_FOUND);
-        }
         return GenericResponse.success("Successfully unassigned supir", updated);
     }
 }
