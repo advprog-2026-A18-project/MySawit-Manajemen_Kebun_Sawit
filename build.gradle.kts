@@ -2,11 +2,14 @@ import org.gradle.api.plugins.quality.CheckstyleExtension
 
 val jjwtVersion = "0.12.6"
 val dotenvVersion = "4.0.0"
+val grpcVersion = "1.73.0"
+val protobufVersion = "4.31.1"
 
 plugins {
     java
     id("org.springframework.boot") version "4.0.2"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.google.protobuf") version "0.9.5"
     id("checkstyle")
     id("jacoco")
     id("org.sonarqube") version "7.2.0.6526"
@@ -74,9 +77,14 @@ dependencies {
     implementation("org.flywaydb:flyway-core:9.22.0")
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.h2database:h2")
+    implementation("io.grpc:grpc-protobuf:$grpcVersion")
+    implementation("io.grpc:grpc-stub:$grpcVersion")
+    implementation("io.grpc:grpc-netty-shaded:$grpcVersion")
+    implementation("com.google.protobuf:protobuf-java:$protobufVersion")
 
     // compileOnly
     compileOnly("org.projectlombok:lombok")
+    compileOnly("org.apache.tomcat:annotations-api:6.0.53")
 
     // runtimeOnly
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
@@ -96,4 +104,22 @@ dependencies {
 
     // testRuntimeOnly
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:$protobufVersion"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+        }
+    }
+    generateProtoTasks {
+        all().forEach {
+            it.plugins {
+                create("grpc")
+            }
+        }
+    }
 }
