@@ -26,6 +26,7 @@ sonarqube {
         property("sonar.organization", "advprog-2026-a18-project")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.exclusions", "**/application-prod.yml,**/application-local.yml,**/application.properties")
+        property("sonar.coverage.exclusions", "**/grpc/auth/**,**/grpc/kebun/**,**/MySawitManajemenKebunSawitApplication.java")
 	}
 }
 
@@ -39,6 +40,17 @@ tasks.jacocoTestReport {
     reports {
         xml.required.set(true)
     }
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/grpc/auth/**",
+                    "**/grpc/kebun/**",
+                    "**/MySawitManajemenKebunSawitApplication.class"
+                )
+            }
+        })
+    )
 }
 
 group = "id.ac.ui.cs.advprog"

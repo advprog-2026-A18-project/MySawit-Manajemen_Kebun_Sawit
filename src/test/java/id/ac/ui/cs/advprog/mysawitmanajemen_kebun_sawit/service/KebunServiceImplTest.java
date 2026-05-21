@@ -30,12 +30,17 @@ class KebunServiceImplTest {
     @Mock
     private KebunSupirRepository kebunSupirRepository;
 
+    @Mock
+    private UserRoleValidator userRoleValidator;
+
     @InjectMocks
     private KebunServiceImpl kebunService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        lenient().when(userRoleValidator.isValidRole(any(UUID.class), anyString())).thenReturn(true);
+        lenient().when(userRoleValidator.getFullname(any(UUID.class))).thenReturn(null);
     }
 
     @Test
@@ -271,10 +276,36 @@ class KebunServiceImplTest {
     }
 
     @Test
+    void testAssignMandor_UsesFullnameFromAuth() {
+        UUID mandorId = UUID.randomUUID();
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun("KB001");
+
+        when(userRoleValidator.getFullname(mandorId)).thenReturn("Mandor Auth");
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+
+        KebunResponse result = kebunService.assignMandor("KB001", mandorId, "Nama Dari Request");
+
+        assertEquals("Mandor Auth", result.getNamaMandor());
+    }
+
+    @Test
     void testAssignMandor_NotFound_ThrowsException() {
+        UUID mandorId = UUID.randomUUID();
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
         assertThrows(KebunNotFoundException.class,
-                () -> kebunService.assignMandor("KB999", UUID.randomUUID(), "Pak Mandor"));
+                () -> kebunService.assignMandor("KB999", mandorId, "Pak Mandor"));
+    }
+
+    @Test
+    void testAssignMandor_InvalidRole_ThrowsException() {
+        UUID mandorId = UUID.randomUUID();
+        when(userRoleValidator.isValidRole(mandorId, "MANDOR")).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.assignMandor("KB001", mandorId, "Pak Mandor"));
     }
 
     @Test
@@ -369,6 +400,22 @@ class KebunServiceImplTest {
     }
 
     @Test
+    void testAssignSupir_UsesFullnameFromAuth() {
+        UUID supirId = UUID.randomUUID();
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun("KB001");
+
+        when(userRoleValidator.getFullname(supirId)).thenReturn("Supir Auth");
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+        when(kebunSupirRepository.save(any(KebunSupir.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        kebunService.assignSupir("KB001", supirId, "Nama Dari Request");
+
+        verify(kebunSupirRepository).save(argThat(supir -> "Supir Auth".equals(supir.getNamaSupir())));
+    }
+
+    @Test
     void testAssignSupir_AlreadyAssigned() {
         UUID supirId = UUID.randomUUID();
         KebunSupir existing = new KebunSupir();
@@ -385,9 +432,19 @@ class KebunServiceImplTest {
 
     @Test
     void testAssignSupir_NotFound_ThrowsException() {
+        UUID supirId = UUID.randomUUID();
         when(kebunRepository.findById("KB999")).thenReturn(Optional.empty());
         assertThrows(KebunNotFoundException.class,
-                () -> kebunService.assignSupir("KB999", UUID.randomUUID(), "Supir A"));
+                () -> kebunService.assignSupir("KB999", supirId, "Supir A"));
+    }
+
+    @Test
+    void testAssignSupir_InvalidRole_ThrowsException() {
+        UUID supirId = UUID.randomUUID();
+        when(userRoleValidator.isValidRole(supirId, "SUPIR")).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.assignSupir("KB001", supirId, "Supir A"));
     }
 
     @Test
