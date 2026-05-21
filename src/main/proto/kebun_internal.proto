@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package mysawit.kebun.v1;
+
+option java_multiple_files = true;
+option java_package = "id.ac.ui.cs.advprog.mysawit.grpc.kebun";
+option java_outer_classname = "KebunInternalProto";
+
+service KebunInternalService {
+  rpc GetKebunByKode(GetKebunByKodeRequest) returns (KebunResponse);
+  rpc GetKebunByMandorId(UserKebunRequest) returns (KebunResponse);
+  rpc GetKebunBySupirId(UserKebunRequest) returns (KebunResponse);
+  rpc GetSupirByKebun(GetSupirByKebunRequest) returns (GetSupirByKebunResponse);
+  rpc ValidateMandorSupirSameKebun(ValidateMandorSupirSameKebunRequest) returns (ValidateMandorSupirSameKebunResponse);
+}
+
+message GetKebunByKodeRequest {
+  string kode_kebun = 1;
+}
+
+message UserKebunRequest {
+  string user_id = 1;
+}
+
+message KebunResponse {
+  string kode_kebun = 1;
+  string nama_kebun = 2;
+  int32 luas_hektare = 3;
+  string koordinat = 4;
+  string mandor_id = 5;
+  string mandor_nama = 6;
+  repeated SupirAssignment supir = 7;
+  bool found = 8;
+}
+
+message SupirAssignment {
+  string supir_id = 1;
+  string nama_supir = 2;
+}
+
+message GetSupirByKebunRequest {
+  string kode_kebun = 1;
+  string search_nama = 2;
+}
+
+message GetSupirByKebunResponse {
+  repeated SupirAssignment supir = 1;
+}
+
+message ValidateMandorSupirSameKebunRequest {
+  string mandor_id = 1;
+  string supir_id = 2;
+}
+
+message ValidateMandorSupirSameKebunResponse {
+  bool valid = 1;
+  string mandor_id = 2;
+  string supir_id = 3;
+  string kode_kebun_mandor = 4;
+  string kode_kebun_supir = 5;
+  string message = 6;
+}
