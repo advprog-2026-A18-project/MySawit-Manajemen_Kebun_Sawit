@@ -19,10 +19,16 @@ public class KebunServiceImpl implements KebunService {
 
     private final KebunRepository kebunRepository;
     private final KebunSupirRepository kebunSupirRepository;
+    private final UserRoleValidator userRoleValidator;
 
-    public KebunServiceImpl(KebunRepository kebunRepository, KebunSupirRepository kebunSupirRepository) {
+    public KebunServiceImpl(
+            KebunRepository kebunRepository,
+            KebunSupirRepository kebunSupirRepository,
+            UserRoleValidator userRoleValidator
+    ) {
         this.kebunRepository = kebunRepository;
         this.kebunSupirRepository = kebunSupirRepository;
+        this.userRoleValidator = userRoleValidator;
     }
 
     @Override
@@ -109,11 +115,14 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public KebunResponse assignMandor(String kodeKebun, UUID mandorId, String mandorNama) {
+        validateUserRole(mandorId, "MANDOR", "Mandor");
+        String verifiedMandorNama = resolveFullname(mandorId, mandorNama);
+
         Kebun kebun = kebunRepository.findById(kodeKebun)
                 .orElseThrow(() -> new KebunNotFoundException(kodeKebun));
 
         kebun.setMandorId(mandorId);
-        kebun.setMandorNama(mandorNama);
+        kebun.setMandorNama(verifiedMandorNama);
         Kebun updated = kebunRepository.save(kebun);
         return toResponse(updated);
     }
@@ -154,6 +163,9 @@ public class KebunServiceImpl implements KebunService {
 
     @Override
     public KebunResponse assignSupir(String kodeKebun, UUID supirId, String namaSupir) {
+        validateUserRole(supirId, "SUPIR", "Supir");
+        String verifiedNamaSupir = resolveFullname(supirId, namaSupir);
+
         Kebun kebun = kebunRepository.findById(kodeKebun)
                 .orElseThrow(() -> new KebunNotFoundException(kodeKebun));
 
@@ -169,7 +181,7 @@ public class KebunServiceImpl implements KebunService {
         KebunSupir newSupir = new KebunSupir();
         newSupir.setKodeKebun(kodeKebun);
         newSupir.setSupirId(supirId);
-        newSupir.setNamaSupir(namaSupir);
+        newSupir.setNamaSupir(verifiedNamaSupir);
         kebunSupirRepository.save(newSupir);
 
         return toResponse(kebun);
@@ -234,5 +246,16 @@ public class KebunServiceImpl implements KebunService {
 
     private KebunResponse toResponse(Kebun kebun) {
         return toResponse(kebun, null);
+    }
+
+    private void validateUserRole(UUID userId, String expectedRole, String label) {
+        if (!userRoleValidator.isValidRole(userId, expectedRole)) {
+            throw new IllegalArgumentException(label + " tidak ditemukan atau role tidak valid.");
+        }
+    }
+
+    private String resolveFullname(UUID userId, String fallbackName) {
+        String fullname = userRoleValidator.getFullname(userId);
+        return fullname == null || fullname.isBlank() ? fallbackName : fullname;
     }
 }
