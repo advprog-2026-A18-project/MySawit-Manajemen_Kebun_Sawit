@@ -19,6 +19,11 @@ public class AuthGrpcUserRoleValidator implements UserRoleValidator {
     private final ManagedChannel channel;
     private final AuthInternalServiceGrpc.AuthInternalServiceBlockingStub authStub;
 
+    AuthGrpcUserRoleValidator(ManagedChannel channel, AuthInternalServiceGrpc.AuthInternalServiceBlockingStub authStub) {
+        this.channel = channel;
+        this.authStub = authStub;
+    }
+
     public AuthGrpcUserRoleValidator(AuthGrpcProperties properties) {
         channel = ManagedChannelBuilder.forAddress(properties.getHost(), properties.getPort())
                 .usePlaintext()
