@@ -7,6 +7,7 @@ import id.ac.ui.cs.advprog.mysawitmanajemen_kebun_sawit.service.UserRoleValidato
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class AuthGrpcUserRoleValidator implements UserRoleValidator {
         this.authStub = authStub;
     }
 
+    @Autowired
     public AuthGrpcUserRoleValidator(AuthGrpcProperties properties) {
         channel = ManagedChannelBuilder.forAddress(properties.getHost(), properties.getPort())
                 .usePlaintext()
