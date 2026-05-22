@@ -197,15 +197,10 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testCreateKebun_NullKoordinat_Success() {
+    void testCreateKebun_NullKoordinat_ThrowsException() {
         KebunRequest request = new KebunRequest("KB001", "Kebun", 500, null);
-        Kebun saved = new Kebun();
-        saved.setKodeKebun("KB001");
 
-        when(kebunRepository.save(any(Kebun.class))).thenReturn(saved);
-        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
-
-        assertNotNull(kebunService.createKebun(request));
+        assertThrows(IllegalArgumentException.class, () -> kebunService.createKebun(request));
     }
 
     @Test
@@ -471,6 +466,7 @@ class KebunServiceImplTest {
         currentKebun.setKodeKebun("KB001");
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
+        when(kebunRepository.existsById("KB002")).thenReturn(true);
         when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(List.of(existingSupir));
         when(kebunSupirRepository.findByKodeKebun("KB002")).thenReturn(new ArrayList<>());
         when(kebunSupirRepository.save(any(KebunSupir.class))).thenReturn(new KebunSupir());
@@ -496,6 +492,7 @@ class KebunServiceImplTest {
         currentKebun.setKodeKebun("KB001");
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
+        when(kebunRepository.existsById("KB002")).thenReturn(true);
         when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(List.of(existingSupir));
         when(kebunSupirRepository.findByKodeKebun("KB002")).thenReturn(List.of(targetSupir));
 
@@ -512,20 +509,38 @@ class KebunServiceImplTest {
     }
 
     @Test
-    void testUnassignSupir_SupirNotInCurrentKebun_StillReassigns() {
+    void testUnassignSupir_TargetKebunNotFound_ThrowsException() {
         UUID supirId = UUID.randomUUID();
         Kebun currentKebun = new Kebun();
         currentKebun.setKodeKebun("KB001");
 
         when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
-        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
-        when(kebunSupirRepository.findByKodeKebun("KB002")).thenReturn(new ArrayList<>());
-        when(kebunSupirRepository.save(any(KebunSupir.class))).thenReturn(new KebunSupir());
+        when(kebunRepository.existsById("KB999")).thenReturn(false);
 
-        KebunResponse result = kebunService.unassignSupir("KB001", supirId, "KB002");
-        assertNotNull(result);
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.unassignSupir("KB001", supirId, "KB999"));
+    }
+
+    @Test
+    void testUnassignSupir_SameSourceAndTarget_ThrowsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.unassignSupir("KB001", UUID.randomUUID(), "KB001"));
+    }
+
+    @Test
+    void testUnassignSupir_SupirNotInCurrentKebun_ThrowsException() {
+        UUID supirId = UUID.randomUUID();
+        Kebun currentKebun = new Kebun();
+        currentKebun.setKodeKebun("KB001");
+
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(currentKebun));
+        when(kebunRepository.existsById("KB002")).thenReturn(true);
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.unassignSupir("KB001", supirId, "KB002"));
         verify(kebunSupirRepository, never()).delete(any(KebunSupir.class));
-        verify(kebunSupirRepository).save(any(KebunSupir.class));
+        verify(kebunSupirRepository, never()).save(any(KebunSupir.class));
     }
 
     @Test
@@ -543,5 +558,166 @@ class KebunServiceImplTest {
         when(kebunSupirRepository.findByKodeKebun("KB002")).thenReturn(new ArrayList<>());
 
         assertNotNull(kebunService.createKebun(request));
+    }
+
+    // ===== Tests for new validation behavior =====
+
+    @Test
+    void testCreateKebun_DuplicateKode_ThrowsException() {
+        String validCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":100,\"lng\":100},{\"lat\":100,\"lng\":0}]";
+        KebunRequest request = new KebunRequest("KB001", "Kebun", 500, validCoord);
+
+        when(kebunRepository.existsById("KB001")).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> kebunService.createKebun(request));
+        verify(kebunRepository, never()).save(any(Kebun.class));
+    }
+
+    @Test
+    void testCreateKebun_NullKode_ThrowsException() {
+        String validCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":100,\"lng\":100},{\"lat\":100,\"lng\":0}]";
+        KebunRequest request = new KebunRequest(null, "Kebun", 500, validCoord);
+
+        assertThrows(IllegalArgumentException.class, () -> kebunService.createKebun(request));
+    }
+
+    @Test
+    void testCreateKebun_BlankNama_ThrowsException() {
+        String validCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":100,\"lng\":100},{\"lat\":100,\"lng\":0}]";
+        KebunRequest request = new KebunRequest("KB001", "  ", 500, validCoord);
+
+        assertThrows(IllegalArgumentException.class, () -> kebunService.createKebun(request));
+    }
+
+    @Test
+    void testCreateKebun_NonPositiveLuas_ThrowsException() {
+        String validCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":100,\"lng\":100},{\"lat\":100,\"lng\":0}]";
+        KebunRequest request = new KebunRequest("KB001", "Kebun", 0, validCoord);
+
+        assertThrows(IllegalArgumentException.class, () -> kebunService.createKebun(request));
+    }
+
+    @Test
+    void testUpdateKebun_OverlapWithOtherKebun_Fails() {
+        String existingCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":200},{\"lat\":200,\"lng\":200},{\"lat\":200,\"lng\":0}]";
+        String newCoord = "[{\"lat\":50,\"lng\":50},{\"lat\":50,\"lng\":150},{\"lat\":150,\"lng\":150},{\"lat\":150,\"lng\":50}]";
+
+        Kebun target = new Kebun();
+        target.setKodeKebun("KB002");
+        target.setNamaKebun("Kebun Edit");
+        target.setKoordinat("[{\"lat\":300,\"lng\":300},{\"lat\":300,\"lng\":400},{\"lat\":400,\"lng\":400},{\"lat\":400,\"lng\":300}]");
+
+        Kebun other = new Kebun();
+        other.setKodeKebun("KB001");
+        other.setNamaKebun("Kebun Lain");
+        other.setKoordinat(existingCoord);
+
+        when(kebunRepository.findById("KB002")).thenReturn(Optional.of(target));
+        when(kebunRepository.findAll()).thenReturn(List.of(target, other));
+
+        assertThrows(IllegalStateException.class,
+                () -> kebunService.updateKebun("KB002", new KebunRequest(null, null, null, newCoord)));
+    }
+
+    @Test
+    void testUpdateKebun_NewKoordinatNotOverlapWithSelf_Success() {
+        String oldCoord = "[{\"lat\":0,\"lng\":0},{\"lat\":0,\"lng\":100},{\"lat\":100,\"lng\":100},{\"lat\":100,\"lng\":0}]";
+        String newCoord = "[{\"lat\":50,\"lng\":50},{\"lat\":50,\"lng\":150},{\"lat\":150,\"lng\":150},{\"lat\":150,\"lng\":50}]";
+
+        Kebun self = new Kebun();
+        self.setKodeKebun("KB001");
+        self.setNamaKebun("Self");
+        self.setKoordinat(oldCoord);
+
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(self));
+        when(kebunRepository.findAll()).thenReturn(List.of(self));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(i -> i.getArgument(0));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+
+        KebunResponse result = kebunService.updateKebun("KB001",
+                new KebunRequest(null, null, null, newCoord));
+        assertEquals(newCoord, result.getKoordinat());
+    }
+
+    @Test
+    void testUpdateKebun_BlankNama_ThrowsException() {
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun("KB001");
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.updateKebun("KB001", new KebunRequest(null, "  ", null, null)));
+    }
+
+    @Test
+    void testUpdateKebun_NonPositiveLuas_ThrowsException() {
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun("KB001");
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.updateKebun("KB001", new KebunRequest(null, null, 0, null)));
+    }
+
+    @Test
+    void testAssignMandor_KebunAlreadyHasDifferentMandor_ThrowsException() {
+        UUID existingMandorId = UUID.randomUUID();
+        UUID newMandorId = UUID.randomUUID();
+
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun("KB001");
+        kebun.setMandorId(existingMandorId);
+
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+
+        assertThrows(IllegalStateException.class,
+                () -> kebunService.assignMandor("KB001", newMandorId, "Pak Baru"));
+        verify(kebunRepository, never()).save(any(Kebun.class));
+    }
+
+    @Test
+    void testAssignMandor_SameMandorReassign_Idempotent() {
+        UUID mandorId = UUID.randomUUID();
+
+        Kebun kebun = new Kebun();
+        kebun.setKodeKebun("KB001");
+        kebun.setMandorId(mandorId);
+        kebun.setMandorNama("Pak Mandor");
+
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(kebun));
+        when(kebunRepository.save(any(Kebun.class))).thenAnswer(i -> i.getArgument(0));
+        when(kebunSupirRepository.findByKodeKebun("KB001")).thenReturn(new ArrayList<>());
+
+        KebunResponse result = kebunService.assignMandor("KB001", mandorId, "Pak Mandor");
+        assertEquals(mandorId, result.getMandorId());
+    }
+
+    @Test
+    void testUnassignMandor_TargetAlreadyHasMandor_ThrowsException() {
+        UUID currentMandorId = UUID.randomUUID();
+        UUID targetMandorId = UUID.randomUUID();
+
+        Kebun current = new Kebun();
+        current.setKodeKebun("KB001");
+        current.setMandorId(currentMandorId);
+        current.setMandorNama("Current");
+
+        Kebun target = new Kebun();
+        target.setKodeKebun("KB002");
+        target.setMandorId(targetMandorId);
+        target.setMandorNama("Target");
+
+        when(kebunRepository.findById("KB001")).thenReturn(Optional.of(current));
+        when(kebunRepository.findById("KB002")).thenReturn(Optional.of(target));
+
+        assertThrows(IllegalStateException.class,
+                () -> kebunService.unassignMandor("KB001", "KB002"));
+        verify(kebunRepository, never()).save(any(Kebun.class));
+    }
+
+    @Test
+    void testUnassignMandor_SameSourceAndTarget_ThrowsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> kebunService.unassignMandor("KB001", "KB001"));
     }
 }
