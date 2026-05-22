@@ -93,6 +93,7 @@ dependencies {
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-netty-shaded:$grpcVersion")
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // compileOnly
     compileOnly("org.projectlombok:lombok")
@@ -101,6 +102,7 @@ dependencies {
     // runtimeOnly
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     // annotationProcessor
     annotationProcessor("org.projectlombok:lombok")

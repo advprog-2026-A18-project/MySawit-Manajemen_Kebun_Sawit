@@ -11,6 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AssignSupirRequest {
     private UUID supirId;
-    private String namaSupir; // dari frontend
+    private String namaSupir;
     private UUID targetKebunKode;
 }
