@@ -80,7 +80,6 @@ repositories {
 
 dependencies {
     // implementation
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("me.paulschwarz:spring-dotenv:$dotenvVersion")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
